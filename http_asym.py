@@ -40,7 +40,7 @@ ECE = 0x40
 CWR = 0x80
 
 ### Check if debug is enabled
-if sys.argv[3]:
+if len(sys.argv) > 3:
     debug = 1
 else:
     debug = 0
