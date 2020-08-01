@@ -15,6 +15,7 @@ import sys
 import threading
 from threading import Thread
 import time
+import webbrowser
 
 
 ### Variabeln definieren
@@ -128,6 +129,9 @@ def get_http_packet(packet):
             f = open("website.html", "w")
             f.write(http_response_body)
             f.close()
+            new = 2
+            url = "/home/ben/http_request/website.html"
+            webbrowser.open(url,new=new)
 
         else:
             print("Keine HTTP Layer vorhanden")
