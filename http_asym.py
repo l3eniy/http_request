@@ -42,11 +42,12 @@ URG = 0x20
 ECE = 0x40
 CWR = 0x80
 
-global full_http_response
+full_http_response = ""
 
 def get_http_packet(packet):
         global http_answer 
         http_answer = packet
+        global full_http_response
         full_http_response += packet.getlayer(Raw).load
         return
 
