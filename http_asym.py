@@ -78,9 +78,9 @@ syn = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(sport=s_port, dport=http_port, 
 out_syn = send(syn, verbose=0)
 if debug:
         print("############## SYN packet sent #####################")
-        print("dport von SYN = " + str(syn_ack_dport))
+      #  print("dport von SYN = " + str(syn_ack_dport))
         print("ACK# = " + str(out_syn))
-        print("SEQ# = " + str(syn_ack_seq))
+       # print("SEQ# = " + str(syn_ack_seq))
         print("#####################################################")    
 
 #GET SYNACK : TCP flags SYN and ACK are set
