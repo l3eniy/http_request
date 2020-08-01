@@ -70,20 +70,16 @@ def syn_ack_do(packet):
         print("dport von SYN/ACK = " + str(syn_ack_dport))
         print("ACK# = " + str(syn_ack_ack))
         print("SEQ# = " + str(syn_ack_seq))
-        print("#####################################################")
     return
 
 #SEND SYN
 syn = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(sport=s_port, dport=http_port, flags='S')
-out_syn = send(syn, verbose=0)
+send(syn, verbose=0)
 if debug:
         print("############## SYN packet sent #####################")
-      #  print("dport von SYN = " + str(syn_ack_dport))
-        print("ACK# = " + str(out_syn))
-        ls(out_syn)
-    
-       # print("SEQ# = " + str(syn_ack_seq))
-        print("#####################################################")    
+        print("dport von SYN = " + str(http_port))
+        print("Source IP Address = " + str(attacker_ip))
+        print("Destination IP Address = " + str(dest))
 
 #GET SYNACK : TCP flags SYN and ACK are set
 sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
@@ -91,6 +87,9 @@ sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flag
 #Send ACK
 ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A')
 out_ack = send(ack, verbose=0)
+if debug:
+        print("############## ACK packet sent #####################")
+        type(out_ack)
 
 
 ### Print the layers of the packet
