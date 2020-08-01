@@ -79,6 +79,7 @@ sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
 
 #ls(http_answer)
 print(http_answer.getlayer(IP).src)
+print(http_answer.getlayer(HTTP).Status-Line)
 
 
 
