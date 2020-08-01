@@ -80,7 +80,8 @@ if debug:
         print("############## SYN packet sent #####################")
       #  print("dport von SYN = " + str(syn_ack_dport))
         print("ACK# = " + str(out_syn))
-        type(out_syn)
+        ls(out_syn)
+    
        # print("SEQ# = " + str(syn_ack_seq))
         print("#####################################################")    
 
