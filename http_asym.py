@@ -126,7 +126,7 @@ def get_http_packet(packet):
             http_response_body = str(packet.getlayer(Raw).load)
             print http_response_body
 
-            ### Öffne Google Chrome mit der Website
+            ### Oeffne Google Chrome mit der Website
             f = open("website.html", "w")
             f.write(http_response_body)
             f.close()
