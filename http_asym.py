@@ -29,7 +29,7 @@ VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN
 
 
 dest = sys.argv[1]
-getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: gzip, deflate\r\n\r\n'
+getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 max = 1
 
 # TCP-Flags
@@ -101,6 +101,15 @@ http_layer = http_answer.getlayer(http.HTTPResponse)
 ip_layer = http_answer.getlayer(IP)
 raw = http_answer.getlayer(Raw)
 print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n{2[load]}'.format(ip_layer.fields, http_layer.fields, raw.fields)
+
+
+
+### Dechunk
+
+
+
+
+### decompress
 
 
 
