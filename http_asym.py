@@ -98,7 +98,7 @@ class myThread (threading.Thread):
       sniff_http_response_thread()
 
 
-### Sniff Funktion für sniff_http_response_thread
+### Sniff Funktion fuer sniff_http_response_thread
 full_http_response = ""
 def get_http_packet(packet):
         global http_answer 
