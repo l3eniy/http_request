@@ -131,7 +131,10 @@ def get_http_packet(packet):
             f.close()
             new = 2
             url = "/home/ben/http_request/website.html"
-            webbrowser.open(url,new=new)
+            #!/bin/bash
+            su ben
+            firefox website.html
+
 
         else:
             print("Keine HTTP Layer vorhanden")
