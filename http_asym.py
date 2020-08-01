@@ -113,7 +113,7 @@ def get_http_packet(packet):
         if packet.haslayer(HTTPResponse) is True:
             string_raw = str(packet.getlayer(Raw).load)
             print("HTTP Body faengt an mit:  " + string_raw[0:10])
-            print("Der Body hat eine Länge von:  " + str(len(string_raw)))
+            print("Der Body hat eine Laenge von:  " + str(len(string_raw)))
         print("")
         return
 
