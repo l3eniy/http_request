@@ -27,6 +27,7 @@ mac_src = "be:fb:ef:be:fb:ef"
 mac_dst = "ea:e4:59:b5:42:03" #"ff:ff:ff:ff:ff:ff"
 attacker_ip = "172.20.10.10"
 http_port = int(sys.argv[2])
+dest = sys.argv[1]
 s_port = random.randint(20000,65500)
 
 # TCP-Flags definieren
@@ -129,7 +130,6 @@ time.sleep(1) #Sniffer braucht ein wenig Zeit zum wach werden
 
 ### HTTP GET Paket 
 # Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
-dest = sys.argv[1]
 getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 
 #$$$$$ SEND HTTP Request
