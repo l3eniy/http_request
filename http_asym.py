@@ -132,7 +132,6 @@ def get_http_packet(packet):
             new = 2
             url = "/home/ben/http_request/website.html"
             #!/bin/bash
-            su ben
             firefox website.html
 
 
