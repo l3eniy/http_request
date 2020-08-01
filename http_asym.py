@@ -115,7 +115,7 @@ def get_http_packet(packet):
 
 #Sniff HTTP Response Function
 def sniff_http_response_thread():
-    sniff(filter = "tcp port " + str(http_port), prn=get_http_packet + " and tcp-ack == 58", count = 3)  # + " and tcp[tcpflags] & tcp-ack == 58"
+    sniff(filter = "tcp port " + str(http_port)  + " and tcp-ack == 58", prn=get_http_packet, count = 3)  # + " and tcp[tcpflags] & tcp-ack == 58"
     return
 
 #create sniff thread
