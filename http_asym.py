@@ -112,7 +112,7 @@ def get_http_packet(packet):
             print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
             print("Source IP =  " + str(packet.getlayer(IP).src))
             print("")
-            
+
         if packet.haslayer(HTTPResponse) is True:
             print("############## Header ###################")
             print("")
@@ -123,6 +123,11 @@ def get_http_packet(packet):
             print("############## Body ###################")            
             http_response_body = str(packet.getlayer(Raw).load)
             print http_response_body
+
+            f = open("website.html", "w")
+            f.write(http_response_body)
+            f.close()
+
         else:
             print("Keine HTTP Layer vorhanden")
         print("")
