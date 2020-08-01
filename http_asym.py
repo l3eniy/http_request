@@ -72,15 +72,15 @@ out_ack = send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport
 
 
 ### Print the layers of the packet
-# def get_packet_layers(packet):
-#     counter = 0
-#     while True:
-#         layer = packet.getlayer(counter)
-#         if layer is None:
-#             break
+def get_packet_layers(packet):
+     counter = 0
+     while True:
+         layer = packet.getlayer(counter)
+         if layer is None:
+             break
 
-#         yield layer
-#         counter += 1
+         yield layer
+         counter += 1
 
 # for layer in get_packet_layers(http_answer):
 #     print (layer.name)
@@ -104,7 +104,9 @@ def get_http_packet(packet):
         global http_answer 
         http_answer = packet
         global full_http_response
-        full_http_response += packet.getlayer(Raw).load
+        #full_http_response += packet.getlayer(Raw).load
+        for layer in get_packet_layers(http_answer):
+            print (layer.name)
         return
 
 #Sniff HTTP Response Function
@@ -128,11 +130,11 @@ send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_d
 
 time.sleep(6)
 
-http_layer = http_answer.getlayer(http.HTTPResponse)
-ip_layer = http_answer.getlayer(IP)
-raw = http_answer.getlayer(Raw)
-print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
-print(full_http_response)
+#http_layer = http_answer.getlayer(http.HTTPResponse)
+#ip_layer = http_answer.getlayer(IP)
+#raw = http_answer.getlayer(Raw)
+#print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
+#print(full_http_response)
 
 
 
