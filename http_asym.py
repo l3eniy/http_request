@@ -117,7 +117,7 @@ def get_http_packet(packet):
 
             ret = "***************************************GET PACKET****************************************************\n"
             packet_str = str(packet)
-            ret += "\n".join(packet_str.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
+            ret += "\n".join(packet.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
             ret += "*****************************************************************************************************\n"
             print(ret)
 
