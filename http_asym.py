@@ -78,7 +78,7 @@ send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_d
 sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
 
 #ls(http_answer)
-print(http_answer.Status-Line)
+print(http_answer.getlayer(IP).src)
 
 
 
