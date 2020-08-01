@@ -109,7 +109,7 @@ def get_http_packet(packet):
         #    print (layer.name)
         print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
         print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
-        print("HTTP Layer vorhanden? : " + packet.haslayer(HTTPResponse))
+        print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
         print("")
         return
 
