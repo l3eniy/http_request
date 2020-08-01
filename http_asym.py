@@ -119,6 +119,13 @@ def get_http_packet(packet):
             print""
             print("############## Body ###################")
         if packet.haslayer(HTTPResponse) is True:
+            print("############## Header ###################")
+            print("")
+            header_str = str(packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))])
+            left_text = header_str.partition("<!")[0]
+            print(left_text)
+            print""
+            print("############## Body ###################")            
             http_response_body = str(packet.getlayer(Raw).load)
             print http_response_body
         else:
