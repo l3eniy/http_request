@@ -132,7 +132,7 @@ def get_http_packet(packet):
             f.close()
             new = 2
             url = "/home/ben/http_request/website.html"
-            os.system('sudo -u ben  stop google-chrome-stable /home/ben/http_request/website.html')
+            os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
 
 
         else:
