@@ -100,18 +100,8 @@ for layer in get_packet_layers(http_answer):
 http_layer = http_answer.getlayer(http.HTTPResponse)
 ip_layer = http_answer.getlayer(IP)
 raw = http_answer.getlayer(Raw)
-print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n{2[load]}'.format(ip_layer.fields, http_layer.fields, raw.fields)
-
-
-
-### Dechunk
-
-
-
-
-### decompress
-
-
+print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
+print(raw.fields[load])
 
 
 
