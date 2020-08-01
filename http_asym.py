@@ -70,6 +70,7 @@ def syn_ack_do(packet):
         print("dport = " + str(syn_ack_dport))
         print("ACK# = " + str(syn_ack_ack))
         print("SEQ# = " + str(syn_ack_seq))
+        print("")
     return
 
 #SEND SYN
@@ -80,6 +81,7 @@ if debug:
         print("dport von SYN = " + str(http_port))
         print("Source IP Address = " + str(attacker_ip))
         print("Destination IP Address = " + str(dest))
+        print("")
 
 #GET SYNACK : TCP flags SYN and ACK are set
 sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
@@ -89,9 +91,11 @@ ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_
 out_ack = send(ack, verbose=0)
 if debug:
         print("############## ACK packet sent #####################")
+        print("srcport = " + str(syn_ack_dport)) 
         print("ACK# = " + str(syn_ack_seq + 1))
         print("SEQ# = " + str(syn_ack_ack))
-        print("srcport = " + str(syn_ack_dport)) 
+        print("")
+
 
 ### Print the layers of the packet
 def get_packet_layers(packet):
