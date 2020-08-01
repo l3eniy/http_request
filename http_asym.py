@@ -40,11 +40,13 @@ URG = 0x20
 ECE = 0x40
 CWR = 0x80
 
+
 ### Check if debug is enabled
 if len(sys.argv) > 3:
     debug = 1
 else:
     debug = 0
+
 
 ### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
 VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
