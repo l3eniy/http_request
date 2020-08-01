@@ -114,7 +114,7 @@ def get_http_packet(packet):
             print("############## Header ###################")
             print("")
             header_str = str(packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))])
-            left_text = header_str.partition("/n/n")[0]
+            left_text = header_str.partition("Ranges")[0]
             print(left_text)
             print("############## Body ###################")
         if packet.haslayer(HTTPResponse) is True:
