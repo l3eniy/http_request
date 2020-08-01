@@ -86,7 +86,7 @@ send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_d
 #Print the HTTP Reply
 sniff(filter = "tcp port " + str(http_port), prn=http_header, count = 1)
 
-print(http_answer[raw])
+print(http_answer)
 
 
 
