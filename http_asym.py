@@ -16,6 +16,7 @@ import threading
 from threading import Thread
 import time
 import webbrowser
+import os
 
 
 ### Variabeln definieren
@@ -131,8 +132,8 @@ def get_http_packet(packet):
             f.close()
             new = 2
             url = "/home/ben/http_request/website.html"
-            #!/bin/bash
-            firefox "website.html"
+            os.system("start [/home/ben/http_request/website.html]")
+
 
 
         else:
