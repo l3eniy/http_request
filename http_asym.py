@@ -78,10 +78,7 @@ send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_d
 #Print the HTTP Reply
 sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
 
-#ls(http_answer)
-#print(http_answer.getlayer(IP).src)
-#print(http_answer.getlayer(HTTP).Transfer-Encoding)
-
+### Print the layers of the packet
 def get_packet_layers(packet):
     counter = 0
     while True:
@@ -92,13 +89,19 @@ def get_packet_layers(packet):
         yield layer
         counter += 1
 
+for layer in get_packet_layers(http_answer):
+    print (layer.name)
+
+#ls(http_answer)
+#print(http_answer.getlayer(IP).src)
+#print(http_answer.getlayer(HTTP).Transfer-Encoding)
+
 
 http_layer = http_answer.getlayer(http.HTTPResponse)
 ip_layer = http_answer.getlayer(IP)
-print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
+raw = http_answer.getlayer(Raw)
+print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n{2[load]}'.format(ip_layer.fields, http_layer.fields, raw.fields)
 
-for layer in get_packet_layers(http_answer):
-    print (layer.name)
 
 
 
