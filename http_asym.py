@@ -79,7 +79,8 @@ out_syn = send(syn, verbose=0)
 if debug:
         print("############## SYN packet sent #####################")
       #  print("dport von SYN = " + str(syn_ack_dport))
-        print("ACK# = " + type(out_syn))
+        print("ACK# = " + str(out_syn))
+        type(out_syn)
        # print("SEQ# = " + str(syn_ack_seq))
         print("#####################################################")    
 
