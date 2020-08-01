@@ -115,7 +115,7 @@ def get_http_packet(packet):
             print("")
 
 
-            ls(packet)
+            print(packet.getlayer(HTTPResponse)[0:10])
 
 
             print("############## Body ###################")
