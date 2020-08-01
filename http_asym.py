@@ -111,6 +111,9 @@ def get_http_packet(packet):
             print("Source IP =  " + str(packet.getlayer(IP).src))
             print("")
             print("")
+            print("############## Header ###################")
+            print("")
+            ls(packet.getlayer(HTTPResponse))
             print("############## Body ###################")
         if packet.haslayer(HTTPResponse) is True:
             http_response_body = str(packet.getlayer(Raw).load)
