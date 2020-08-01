@@ -48,7 +48,7 @@ def http_header(packet):
 def GET_print(packet1):
     ret = "***************************************GET PACKET****************************************************\n"
     ret += "\n".join(packet1.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
-    ret += "*****************************************************************************************************\n"
+    ret += "*****************************************************************************************************\n\n"
     global http_answer 
     http_answer = packet1
     return ret
@@ -83,6 +83,8 @@ send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_d
 
 #Print the HTTP Reply
 sniff(filter = "tcp port " + str(http_port), prn=http_header, count = 1)
+
+print(http_answer)
 
 
 
