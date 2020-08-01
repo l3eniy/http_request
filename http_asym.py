@@ -82,9 +82,23 @@ sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
 #print(http_answer.getlayer(IP).src)
 #print(http_answer.getlayer(HTTP).Transfer-Encoding)
 
+def get_packet_layers(packet):
+    counter = 0
+    while True:
+        layer = packet.getlayer(counter)
+        if layer is None:
+            break
+
+        yield layer
+        counter += 1
+
+
 http_layer = http_answer.getlayer(http.HTTPResponse)
 ip_layer = http_answer.getlayer(IP)
-print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n{1[load]}'.format(ip_layer.fields, http_layer.fields)
+print '\n{0[src]} Sends a response on {1[Date]} and Server {1[Server]} and Content is \r\n\r\n'.format(ip_layer.fields, http_layer.fields)
+
+for layer in get_packet_layers(http_answer):
+    print (layer.name)
 
 
 
