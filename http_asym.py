@@ -107,6 +107,7 @@ def get_http_packet(packet):
         #full_http_response += packet.getlayer(Raw).load
         for layer in get_packet_layers(http_answer):
             print (layer.name)
+        print("")
         return
 
 #Sniff HTTP Response Function
