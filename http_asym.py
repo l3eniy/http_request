@@ -9,6 +9,7 @@ Usage:
  """
 from scapy.all import *
 from scapy.layers.http import *
+from scapy.layers import http
 import random
 import sys
 
