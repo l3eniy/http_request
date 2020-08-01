@@ -78,8 +78,12 @@ send(VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_d
 sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 1)
 
 #ls(http_answer)
-print(http_answer.getlayer(IP).src)
-print(http_answer.getlayer(HTTP)."Transfer-Encoding")
+#print(http_answer.getlayer(IP).src)
+#print(http_answer.getlayer(HTTP).Transfer-Encoding)
+
+http_layer = http_answer.getlayer(http.HTTPResponse)
+ip_layer = http_answer.getlayer(IP)
+print '\n{0[src]} Sends a response with date {1[Date]}'.format(ip_layer.fields, http_layer.fields)
 
 
 
