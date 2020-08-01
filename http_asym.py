@@ -43,7 +43,7 @@ CWR = 0x80
 def http_header(packet):
         http_packet=str(packet)
         global http_answer 
-        http_answer = packet1
+        http_answer = packet
         if http_packet.find('GET'):
                 return GET_print(packet)
 
