@@ -105,14 +105,17 @@ def get_http_packet(packet):
         http_answer = packet
         global full_http_response
         #full_http_response += packet.getlayer(Raw).load
-        for layer in get_packet_layers(http_answer):
-            print (layer.name)
+        #for layer in get_packet_layers(http_answer):
+        #    print (layer.name)
+        print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
+        print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
+        print("HTTP Layer vorhanden? : " + packet.haslayer(HTTPResponse))
         print("")
         return
 
 #Sniff HTTP Response Function
 def sniff_http_response_thread():
-    sniff(filter = "tcp port " + str(http_port), prn=get_http_packet, count = 3)
+    sniff(filter = "tcp port " + str(http_port) + " and tcp[tcpflags] & tcp-ack == 58", prn=get_http_packet, count = 3)
     return
 
 #create sniff thread
