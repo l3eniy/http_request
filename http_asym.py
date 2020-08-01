@@ -40,7 +40,7 @@ ECE = 0x40
 CWR = 0x80
 
 ### Check if debug is enabled
-if sys.argv[3] is not "":
+if sys.argv[3]:
     debug = 1
 else:
     debug = 0
@@ -66,11 +66,11 @@ def syn_ack_do(packet):
     global syn_ack_seq
     syn_ack_seq = packet[TCP].seq
     if debug:
-        print("############## SYN/ACK packet ##############")
+        print("############## SYN/ACK packet received ##############")
         print("dport von SYN/ACK = " + str(syn_ack_dport))
         print("ACK# = " + str(syn_ack_ack))
         print("SEQ# = " + str(syn_ack_seq))
-        print("############################################")
+        print("#####################################################")
     return
 
 #SEND SYN
