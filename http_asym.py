@@ -110,14 +110,7 @@ def get_http_packet(packet):
             print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
             print("Source IP =  " + str(packet.getlayer(IP).src))
             print("")
-            print("")
-            print("############## Header ###################")
-            print("")
-            header_str = str(packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))])
-            left_text = header_str.partition("<!")[0]
-            print(left_text)
-            print""
-            print("############## Body ###################")
+            
         if packet.haslayer(HTTPResponse) is True:
             print("############## Header ###################")
             print("")
