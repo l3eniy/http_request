@@ -110,14 +110,18 @@ def get_http_packet(packet):
         print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
         print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
         print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
+        print("Source IP =  " + str(packet.getlayer(IP).src))
         if packet.haslayer(HTTPResponse) is True:
             string_raw = str(packet.getlayer(Raw).load)
-            print("HTTP Body faengt an mit:  " + string_raw)
+            print("HTTP Body faengt an mit:  " + string_raw) ### [0:10]
             print("Der Body hat eine Laenge von:  " + str(len(string_raw)))
         print("")
         return
 
-#Sniff HTTP Response Function
+### Sniff HTTP Response Function
+# 
+# Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Länge von 57. Die Ack Nummer ist L
+#
 def sniff_http_response_thread():
     sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
     return
