@@ -42,6 +42,8 @@ CWR = 0x80
 
 def http_header(packet):
         http_packet=str(packet)
+        global http_answer 
+        http_answer = packet1
         if http_packet.find('GET'):
                 return GET_print(packet)
 
@@ -49,8 +51,8 @@ def GET_print(packet1):
     ret = "***************************************GET PACKET****************************************************\n"
     ret += "\n".join(packet1.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
     ret += "*****************************************************************************************************\n\n"
-    global http_answer 
-    http_answer = packet1
+    #global http_answer 
+    #http_answer = packet1
     return ret
 
 
