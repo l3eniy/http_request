@@ -49,7 +49,7 @@ def GET_print(packet1):
     ret = "***************************************GET PACKET****************************************************\n"
     ret += "\n".join(packet1.sprintf("{Raw:%Raw.load%}\n").split(r"\r\n"))
     ret += "*****************************************************************************************************\n"
-    global http_answer = packet1
+    #global http_answer = packet1
     return ret
 
 
