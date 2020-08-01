@@ -113,7 +113,7 @@ def get_http_packet(packet):
             print("")
             print("############## Header ###################")
             print("")
-            header_str = packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))]
+            header_str = str(packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))])
             left_text = header_str.partition("/r/n")[0]
             print(left_text)
             print("############## Body ###################")
