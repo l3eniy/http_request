@@ -149,8 +149,7 @@ def get_http_packet1(packet):
     print(packet.summary())
     if packet.haslayer(HTTPResponse) is True:
         global http_status
-        #http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Status_Code)
-        http_status = str(packet.getlayer(HTTPResponse)._HTTPHeaderField) 
+        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Status_Code) 
         print("\r\nPacket has layer HTTPResponse")
         ls(packet.getlayer(HTTPResponse))
     if packet.haslayer(HTTP) is True:
