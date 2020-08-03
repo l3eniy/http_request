@@ -144,6 +144,7 @@ def get_http_packet(packet):
         print("")
         return
 
+http_content = ""
 def get_http_packet1(packet):
     #print("\r\n\r\n\r\n######### Paket ist eingetroffen! #########")
     #print(packet.summary())
