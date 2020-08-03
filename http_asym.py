@@ -147,9 +147,12 @@ def get_http_packet(packet):
 def get_http_packet1(packet):
     print("\r\n\r\n\r\n######### Paket ist eingetroffen! #########")
     print(packet.summary())
+    if packet.haslayer(HTTPResponse) is True:
+        print("\r\nPacket has layer HTTPResponse")
+        ls(packet.getlayer(HTTPResponse))
     if packet.haslayer(HTTP) is True:
         print("\r\nPacket has layer HTTP")
-        ls(packet.getlayer(HTTP))
+        ls(packet.getlayer(HTTPResponse))
     if packet.haslayer(Raw) is True:
         print("\r\nPacket has layer Raw")
         print("\r\n" + packet.getlayer(Raw).load)
