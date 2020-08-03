@@ -122,9 +122,10 @@ def get_http_packet(packet):
             left_text = header_str.partition("<!")[0]
             print(left_text)
             print""
-            print("############## Body ###################")            
-            http_response_body = str(packet.getlayer(Raw).load)
-            print http_response_body
+            print("############## Body ###################")
+            if packet.getlayer(Raw).load != None:           
+                http_response_body = str(packet.getlayer(Raw).load)
+                print http_response_body
 
             ### Oeffne Google Chrome mit der Website
             f = open("website.html", "w")
