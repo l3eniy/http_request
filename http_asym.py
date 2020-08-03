@@ -139,17 +139,26 @@ def get_http_packet(packet):
             url = "/home/ben/http_request/website.html"
             os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
 
-
         else:
             print("Keine HTTP Layer vorhanden")
         print("")
         return
 
+def get_http_packet1(packet):
+    print("\r\n#########")
+    packet.summary()
+    if packet.haslayer(HTTP) is True:
+        print("\r\nPacket has layer HTTP")
+    if packet.haslayer(Raw) is True:
+        print("\r\nPacket has layer Raw")
+
+
+
 ### Sniff Funktion um HTTPResponse zu finden
 # Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist Length + 1
 def sniff_http_response_thread():
     #sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
-    sniff(session=TCPSession, filter = "tcp port 80", prn=lambda x: x.summary(), store=False, count = 5)
+    sniff(session=TCPSession, filter = "tcp port 80", prn=get_http_packet1, store=False, count = 5)
     return
 
 # Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
