@@ -212,7 +212,7 @@ sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flag
 
 ### psh_ack_do ist die Funktion, die beim sniffen des PSH/ACK Pakets ausgefuehrt wird
 # Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
-def syn_ack_do(packet):
+def psh_ack_do(packet):
     global psh_ack_dport
     psh_ack_dport = packet[TCP].dport
     global psh_ack_ack
