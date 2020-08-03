@@ -176,7 +176,7 @@ def sniff_http_response_thread():
         ### Oeffne Google Chrome mit der Website
     http_body = http_content.partition("\r\n\r\n")[2]
     f = open("website.html", "w")
-    f.write(http_body)  ### http_content umfasst noch die Header. muessen noch weg
+    f.write(http_body)
     f.close()
     new = 2
     url = "/home/ben/http_request/website.html"
@@ -204,6 +204,38 @@ if debug:
         print("")
 
 
+
+
+
+# Auf jedes erhaltene Paket muss ein ACK geschickt werden
+sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & PSH, prn=psh_ack_do, count = 1)
+
+### psh_ack_do ist die Funktion, die beim sniffen des PSH/ACK Pakets ausgefuehrt wird
+# Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
+def syn_ack_do(packet):
+    global psh_ack_dport
+    psh_ack_dport = packet[TCP].dport
+    global psh_ack_ack
+    psh_ack_ack = packet[TCP].ack
+    global psh_ack_seq
+    psh_ack_seq = packet[TCP].seq
+    if debug:
+        print("############## PSH/ACK packet received ##############")
+        print("dport = " + str(psh_ack_dport))
+        print("ACK# = " + str(psh_ack_ack))
+        print("SEQ# = " + str(psh_ack_seq))
+        print("")
+    return
+
+#$$$$$ SEND ACK on PSH/ACK
+ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=psh_ack_dport,seq=psh_ack_ack, ack=psh_ack_seq + 1, flags='A')
+out_ack = send(ack, verbose=0)
+if debug:
+        print("############## ACK packet sent #####################")
+        print("srcport = " + str(syn_ack_dport)) 
+        print("ACK# = " + str(syn_ack_seq + 1))
+        print("SEQ# = " + str(syn_ack_ack))
+        print("")
 
 
 
