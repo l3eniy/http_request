@@ -174,8 +174,9 @@ def sniff_http_response_thread():
     print("")
     print(http_content)
         ### Oeffne Google Chrome mit der Website
+    http_body = http_content.partition("\r\n\r\n")[0]
     f = open("website.html", "w")
-    f.write(http_content)  ### http_content umfasst noch die Header. muessen noch weg
+    f.write(http_body)  ### http_content umfasst noch die Header. muessen noch weg
     f.close()
     new = 2
     url = "/home/ben/http_request/website.html"
