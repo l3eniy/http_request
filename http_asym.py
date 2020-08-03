@@ -123,9 +123,17 @@ def get_http_packet(packet):
             print(left_text)
             print""
             print("############## Body ###################")
-            if packet.getlayer(Raw).load != None:           
+            try:
                 http_response_body = str(packet.getlayer(Raw).load)
                 print http_response_body
+                pass
+            except expression as identifier:
+                print("Error line 130")
+                pass
+            else:
+                print("gibt kein load error 134")
+                pass           
+
 
             ### Oeffne Google Chrome mit der Website
             f = open("website.html", "w")
