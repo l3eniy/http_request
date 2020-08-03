@@ -148,6 +148,9 @@ def get_http_packet1(packet):
     print("\r\n\r\n\r\n######### Paket ist eingetroffen! #########")
     print(packet.summary())
     if packet.haslayer(HTTPResponse) is True:
+        global http_status
+        #http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Status_Code)
+        http_status = str(packet.getlayer(HTTPResponse)._HTTPHeaderField) 
         print("\r\nPacket has layer HTTPResponse")
         ls(packet.getlayer(HTTPResponse))
     if packet.haslayer(HTTP) is True:
@@ -164,6 +167,7 @@ def get_http_packet1(packet):
 def sniff_http_response_thread():
     #sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
     sniff(session=TCPSession, filter = "tcp port 80", prn=get_http_packet1, store=False, count = 5)
+    print(http_status)
     return
 
 # Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
