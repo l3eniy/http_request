@@ -149,7 +149,7 @@ def get_http_packet(packet):
 # Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist Length + 1
 def sniff_http_response_thread():
     #sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
-    sniff(session=TCPSession, filter = "tcp port 80", prn=get_http_packet, store=False, count = 5)
+    sniff(session=TCPSession, filter = "tcp port 80", prn=lambda x: x.summary(), store=False, count = 5)
     return
 
 # Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
