@@ -151,6 +151,7 @@ def get_http_packet1(packet):
         print("\r\nPacket has layer HTTP")
     if packet.haslayer(Raw) is True:
         print("\r\nPacket has layer Raw")
+        ls(packet.getlayer(Raw))
 
 
 
