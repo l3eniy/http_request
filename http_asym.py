@@ -127,7 +127,8 @@ def get_http_packet(packet):
                 http_response_body = str(packet.getlayer(Raw).load)
                 print http_response_body
             except:
-                print("Error line 130")       
+                print("Error line 130")
+                return      
 
 
             ### Oeffne Google Chrome mit der Website
