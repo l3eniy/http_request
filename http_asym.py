@@ -151,7 +151,7 @@ def sniff_http_response_thread():
 # auch sehr schnelle Responses eingefangen werden koennen
 sniffer = myThread()
 sniffer.start()
-#time.sleep(1) #Sniffer braucht ein wenig Zeit zum wach werden
+time.sleep(0.2) #Sniffer braucht ein wenig Zeit zum wach werden
 
 ### HTTP GET Paket 
 # Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
