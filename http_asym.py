@@ -205,11 +205,6 @@ if debug:
 
 
 
-
-
-# Auf jedes erhaltene Paket muss ein ACK geschickt werden
-sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & PSH, prn=psh_ack_do, count = 1)
-
 ### psh_ack_do ist die Funktion, die beim sniffen des PSH/ACK Pakets ausgefuehrt wird
 # Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
 def psh_ack_do(packet):
@@ -236,6 +231,10 @@ if debug:
         print("ACK# = " + str(syn_ack_seq + 1))
         print("SEQ# = " + str(syn_ack_ack))
         print("")
+
+# Auf jedes erhaltene Paket muss ein ACK geschickt werden
+sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & PSH, prn=psh_ack_do, count = 1)
+
 
 
 
