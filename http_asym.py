@@ -157,7 +157,7 @@ def get_http_packet1(packet):
     #    ls(packet.getlayer(HTTP))
     if packet.haslayer(Raw) is True:
         global http_content
-        http_content += packet.getlayer(Raw).load
+        http_content += str(packet.getlayer(Raw).load)
         #print("\r\nPacket has layer Raw")
         #print("\r\n" + packet.getlayer(Raw).load)
 
