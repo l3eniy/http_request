@@ -144,6 +144,7 @@ def get_http_packet(packet):
         print("")
         return
 
+### NEUE Sniff Funktion fuer sniff_http_response_thread
 http_content = ""
 def get_http_packet1(packet):
     #print("\r\n\r\n\r\n######### Paket ist eingetroffen! #########")
@@ -172,6 +173,13 @@ def sniff_http_response_thread():
     print(http_status)
     print("")
     print(http_content)
+        ### Oeffne Google Chrome mit der Website
+    f = open("website.html", "w")
+    f.write(http_content)
+    f.close()
+    new = 2
+    url = "/home/ben/http_request/website.html"
+    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
     return
 
 # Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
