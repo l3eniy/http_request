@@ -90,16 +90,16 @@ def worker(packet):
     print("Flags:               " + str(flags))
     print("TCP ACK#:            " + str(in_ack))
     print("TCP SEQ#:            " + str(in_seq))
-    if (int(flags) ^ PSH) == False:
+    if flags & PSH:
         print "PSH Flag set"
-    if (int(flags) ^ (SYN | ACK)) == False:
+    if (flags & (SYN ^ ACK)) == 18:
         print "SYN/ACK --> both Flags set"
     else:
-        if (int(flags) ^ SYN) == False:
+        if flags & SYN:
             print "SYN Flag set"
-        if (int(flags) ^ ACK) == False:
+        if flags & ACK:
             print "ACK Flag set"
-    if (int(flags) ^ FIN) == False:
+    if flags & FIN:
         print "FIN Flag set"
 
 
