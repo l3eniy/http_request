@@ -76,7 +76,7 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
 
 def send_request(dst_port, seq_nr, ack_nr):
     while CONNECTED is not True:
-        sleep(0.01)
+        time.sleep(0.01)
     syn_ack_received_send_http_req(dst_port, seq_nr, ack_nr)
 
 
@@ -85,7 +85,7 @@ http_content = ""
 def fin_function():
     ### Wait until FIN packet is received
     while CONNECTION_FINISHED is not True:
-        sleep(0.2)
+        time.sleep(0.2)
 
     ### Connection is Finished --> FIN Packet Received
     print(http_status)
@@ -170,17 +170,17 @@ def packet_received(packet):
     in_ack = packet[TCP].ack
     dst_port = packet.getlayer(TCP).dport
 
-### starte den connection manager Thread
+    ### starte den connection manager Thread
     global threads
     connection_management = threading.Thread(target=TCP_connection_manager, args=(packet, payload_length, flags, in_seq, in_ack, dst_port))
     threads.append(connection_management)
     connection_management.start()
     
-### starte den send request Thread
+    ### starte den send request Thread
     send_request_thread = threading.Thread(target=send_request, args=(dst_port, seq_nr, ack_nr))
     send_request_thread.start()
 
-### Greife HTTP header und Payload ab
+    ### Greife HTTP header und Payload ab
     if packet.haslayer(HTTPResponse) is True:
         global http_status
         ### http status ist die Response Status Nachricht. zB HTTP1.1/200/OK
