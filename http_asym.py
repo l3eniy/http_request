@@ -105,7 +105,7 @@ def worker(packet):
 
     ack_nr = in_seq + payload_length + 1
     seq_nr = in_ack
-    if payload_length > 0 or flags & (SYN ^ ACK):
+    if payload_length > 0 or (flags & (SYN ^ ACK)) == 18:
         print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
     if flags & FIN:
         print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
