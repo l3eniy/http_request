@@ -136,7 +136,7 @@ def worker(packet):
         if flags & FIN:
             print "FIN Flag set"
 
-    #### ACK# = SEQ# + Payload Länge + 1
+    #### ACK# = SEQ# + Payload Laenge + 1
     #### SEQ# = ACK#
     ack_nr = in_seq + payload_length + 1
     seq_nr = in_ack
