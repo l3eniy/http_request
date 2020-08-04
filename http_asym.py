@@ -169,6 +169,8 @@ def packet_received(packet):
     in_seq = packet[TCP].seq
     in_ack = packet[TCP].ack
     dst_port = packet.getlayer(TCP).dport
+    ack_nr = in_seq + payload_length + 1
+    seq_nr = in_ack
 
     ### starte den connection manager Thread
     global threads
