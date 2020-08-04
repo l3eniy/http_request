@@ -80,7 +80,10 @@ def syn_ack_do(packet):
 
 
 def worker(packet):
-    print (packet.summary())
+    #print (packet.summary())
+    print ("IP Source: " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
+    print ("IP Destin: " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
+    print("TCP Flags:  " + str(packet.getlayer(TCP).flags))
     print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
 
