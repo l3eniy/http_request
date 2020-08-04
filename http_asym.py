@@ -79,6 +79,7 @@ def syn_ack_do(packet):
 def send_tcp(src_port, seqnr, acknr, tcp_flags):
     ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags=tcp_flags)
     out_ack = send(ack, verbose=0)
+    return
 
 
 
