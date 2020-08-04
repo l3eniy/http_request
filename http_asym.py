@@ -87,8 +87,8 @@ def worker(packet):
     print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
     print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
     print("TCP Payload Length:  " + str(payload_length))
-    print("TCP ACK#:            " + str(in_ack)
-    print("TCP SEQ#:            " + str(in_seq)
+    print("TCP ACK#:            " + str(in_ack))
+    print("TCP SEQ#:            " + str(in_seq))
     if flags & PSH:
         print "PSH Flag set"
     if flags & (SYN ^ ACK):
