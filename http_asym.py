@@ -99,7 +99,7 @@ def start_TCP_IN_Thread(packet):
     t.start()
 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp port " + str(http_port), prn=start_TCP_IN_Thread(), store=False, count = 5)
+    sniff(session=TCPSession, filter = "tcp port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 5)
     return
 
 
