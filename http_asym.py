@@ -81,14 +81,23 @@ def syn_ack_do(packet):
 
 def worker(packet):
     payload_length = len(packet[TCP].payload)
+    flags = packet.getlayer(TCP).flags
     print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
     print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
-    print("TCP Flags:           " + packet.getlayer(TCP).flags)
+    print("TCP Flags:           " + str(packet.getlayer(TCP).flags))
     print("TCP Payload Length:  " + str(len(packet[TCP].payload)))
     print("TCP ACK#:            " + str(packet[TCP].ack))
     print("TCP SEQ#:            " + str(packet[TCP].seq))
     print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     #if payload_length > 0 or 
+    if flags & SYN:
+        print "SYN Flag found"
+    if flags & ACK:
+        print "ACK Flag found"
+    if flags & FIN:
+        print "FIN Flag found"
+    if flags & PSH:
+        print "PSH Flag found"
     return
 
 ### Thread Klasse initiieren fuer ACK
