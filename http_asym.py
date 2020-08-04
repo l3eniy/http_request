@@ -99,7 +99,7 @@ def worker(packet):
         print "PSH Flag set"
     print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
 
-    if payload_length > 0 or 
+    #if payload_length > 0 or 
     
     return
 
