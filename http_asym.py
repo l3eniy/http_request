@@ -75,7 +75,7 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
 
 
 def send_request(dst_port, seq_nr, ack_nr):
-    while CONNECTED is not True
+    while CONNECTED is not True:
         sleep(0.01)
     syn_ack_received_send_http_req(dst_port, seq_nr, ack_nr)
 
