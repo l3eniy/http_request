@@ -87,7 +87,7 @@ def worker(packet):
     print("TCP Payload Length:  " + str(len(packet[TCP].payload)))
     print("TCP ACK#:            " + str(packet[TCP].ack))
     print("TCP SEQ#:            " + str(packet[TCP].seq))
-    if flags & (SYN & ACK):
+    if flags & (SYN ^ ACK):
         print "SYN/ACK --> both Flags set"
     if flags & SYN:
         print "SYN Flag set"
