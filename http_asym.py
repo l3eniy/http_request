@@ -87,9 +87,9 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
     send(http_request, verbose=0)
     if debug:
         print("############## HTTP Request sent #####################")
-        print("srcport = " + str(syn_ack_dport)) 
-        print("ACK# = " + str(syn_ack_seq + 1))
-        print("SEQ# = " + str(syn_ack_ack))
+        print("srcport = " + str(src_port)) 
+        print("ACK# = " + str(acknr))
+        print("SEQ# = " + str(seqnr))
         print("")
 
 
