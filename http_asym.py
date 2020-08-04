@@ -101,8 +101,9 @@ def start_TCP_IN_Thread(packet):
     threads.append(t)
     t.start()
 
+#tcp src port " + str(http_port) + " or 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port) + " or tcp dst port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 5)
+    sniff(session=TCPSession, filter = "tcp dst port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 5)
     return
 
 
