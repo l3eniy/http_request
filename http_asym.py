@@ -84,7 +84,7 @@ def worker(packet):
     print ("IP Destin: " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
     print("TCP Flags:  " + str(packet.getlayer(TCP).flags))
     try:
-        print str(packet.getlayer(TCP).payload_guess)
+        print len(packet[TCP].payload)
     except:
         print "Payload Guess Exception"
         
