@@ -81,8 +81,6 @@ def send_tcp(src_port, seqnr, acknr, tcp_flags):
     out_ack = send(ack, verbose=0)
     return
 
-
-
 def worker(packet):
     payload_length = len(packet[TCP].payload)
     flags = packet.getlayer(TCP).flags
@@ -164,14 +162,14 @@ if debug:
 #sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
 
 #$$$$$ SEND ACK
-ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A')
-out_ack = send(ack, verbose=0)
-if debug:
-        print("############## ACK packet sent #####################")
-        print("srcport = " + str(syn_ack_dport)) 
-        print("ACK# = " + str(syn_ack_seq + 1))
-        print("SEQ# = " + str(syn_ack_ack))
-        print("")
+# ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A')
+# out_ack = send(ack, verbose=0)
+# if debug:
+#         print("############## ACK packet sent #####################")
+#         print("srcport = " + str(syn_ack_dport)) 
+#         print("ACK# = " + str(syn_ack_seq + 1))
+#         print("SEQ# = " + str(syn_ack_ack))
+#         print("")
 
 
 ### Thread Klasse initiieren fuer den Sniffer von HTTPResponse
