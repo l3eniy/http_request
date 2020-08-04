@@ -205,6 +205,34 @@ if debug:
 
 
 
+
+
+def worker(packet):
+    print (packet.summary())
+
+### Thread Klasse initiieren fuer ACK
+class Sniff_Thread (threading.Thread):
+   def __init__(self):
+      threading.Thread.__init__(self)
+   def run(self):
+      sniff_all_packets()
+
+threads = []
+def start_TCP_IN_Thread(packet):
+    global threads
+    t = threading.Thread(target=worker, args=(packet,))
+    threads.append(t)
+    t.start()
+
+def sniff_all_packets():
+    sniff(session=TCPSession, filter = "tcp port " + str(http_port), prn=start_TCP_in_Thread(), store=False, count = 5)
+    return
+
+
+
+
+
+
 ### psh_ack_do ist die Funktion, die beim sniffen des PSH/ACK Pakets ausgefuehrt wird
 # Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
 def psh_ack_do(packet):
@@ -214,6 +242,8 @@ def psh_ack_do(packet):
     psh_ack_ack = packet[TCP].ack
     global psh_ack_seq
     psh_ack_seq = packet[TCP].seq
+    global psh_ack_len
+    psh_ack_len = 
     if debug:
         print("############## PSH/ACK packet received ##############")
         print("dport = " + str(psh_ack_dport))
