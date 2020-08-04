@@ -126,14 +126,14 @@ def start_TCP_IN_Thread(packet):
     t.start()
 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 5)
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 10)
     return
 
 
 
 SNIFFER = Sniff_Thread()
 SNIFFER.start()
-time.sleep(4)
+time.sleep(1)
 
 
 
@@ -173,89 +173,89 @@ class myThread (threading.Thread):
       sniff_http_response_thread()
 
 
-### Sniff Funktion fuer sniff_http_response_thread
-def get_http_packet(packet):
-        if debug:
-            print("############## HTTP Response received ###################")
-            print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
-            print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
-            print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
-            print("Source IP =  " + str(packet.getlayer(IP).src))
-            print("")
+# ### Sniff Funktion fuer sniff_http_response_thread
+# def get_http_packet(packet):
+#         if debug:
+#             print("############## HTTP Response received ###################")
+#             print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
+#             print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
+#             print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
+#             print("Source IP =  " + str(packet.getlayer(IP).src))
+#             print("")
 
-        if packet.haslayer(HTTPResponse) is True:
-            print("############## Header ###################")
-            print("")
-            header_str = str(packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))])
-            left_text = header_str.partition("<!")[0]
-            print(left_text)
-            print""
-            print("############## Body ###################")
-            try:
-                http_response_body = str(packet.getlayer(Raw).load)
-                print http_response_body
-            except:
-                print("Error line 130")
-                return      
-
-
-            ### Oeffne Google Chrome mit der Website
-            f = open("website.html", "w")
-            f.write(http_response_body)
-            f.close()
-            new = 2
-            url = "/home/ben/http_request/website.html"
-            os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
-
-        else:
-            print("Keine HTTP Layer vorhanden")
-        print("")
-        return
-
-### NEUE Sniff Funktion fuer sniff_http_response_thread
-http_content = ""
-def get_http_packet1(packet):
-    #print("\r\n\r\n\r\n######### Paket ist eingetroffen! #########")
-    #print(packet.summary())
-    if packet.haslayer(HTTPResponse) is True:
-        global http_status
-        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
-        #print("\r\nPacket has layer HTTPResponse")
-        #ls(packet.getlayer(HTTPResponse))
-    #if packet.haslayer(HTTP) is True:
-    #    print("\r\nPacket has layer HTTP")
-    #    ls(packet.getlayer(HTTP))
-    if packet.haslayer(Raw) is True:
-        global http_content
-        http_content += str(packet.getlayer(Raw).load)
-        #print("\r\nPacket has layer Raw")
-        #print("\r\n" + packet.getlayer(Raw).load)
+#         if packet.haslayer(HTTPResponse) is True:
+#             print("############## Header ###################")
+#             print("")
+#             header_str = str(packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))])
+#             left_text = header_str.partition("<!")[0]
+#             print(left_text)
+#             print""
+#             print("############## Body ###################")
+#             try:
+#                 http_response_body = str(packet.getlayer(Raw).load)
+#                 print http_response_body
+#             except:
+#                 print("Error line 130")
+#                 return      
 
 
+#             ### Oeffne Google Chrome mit der Website
+#             f = open("website.html", "w")
+#             f.write(http_response_body)
+#             f.close()
+#             new = 2
+#             url = "/home/ben/http_request/website.html"
+#             os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
 
-### Sniff Funktion um HTTPResponse zu finden
-# Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist Length + 1
-def sniff_http_response_thread():
-    #sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
-    sniff(session=TCPSession, filter = "tcp port 80", prn=get_http_packet1, store=False, count = 5)
-    print(http_status)
-    print("")
-    print(http_content)
-        ### Oeffne Google Chrome mit der Website
-    http_body = http_content.partition("\r\n\r\n")[2]
-    f = open("website.html", "w")
-    f.write(http_body)
-    f.close()
-    new = 2
-    url = "/home/ben/http_request/website.html"
-    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
-    return
+#         else:
+#             print("Keine HTTP Layer vorhanden")
+#         print("")
+#         return
 
-# Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
-# auch sehr schnelle Responses eingefangen werden koennen
-sniffer = myThread()
-sniffer.start()
-time.sleep(1) #Sniffer braucht ein wenig Zeit zum wach werden
+# ### NEUE Sniff Funktion fuer sniff_http_response_thread
+# http_content = ""
+# def get_http_packet1(packet):
+#     #print("\r\n\r\n\r\n######### Paket ist eingetroffen! #########")
+#     #print(packet.summary())
+#     if packet.haslayer(HTTPResponse) is True:
+#         global http_status
+#         http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
+#         #print("\r\nPacket has layer HTTPResponse")
+#         #ls(packet.getlayer(HTTPResponse))
+#     #if packet.haslayer(HTTP) is True:
+#     #    print("\r\nPacket has layer HTTP")
+#     #    ls(packet.getlayer(HTTP))
+#     if packet.haslayer(Raw) is True:
+#         global http_content
+#         http_content += str(packet.getlayer(Raw).load)
+#         #print("\r\nPacket has layer Raw")
+#         #print("\r\n" + packet.getlayer(Raw).load)
+
+
+
+# ### Sniff Funktion um HTTPResponse zu finden
+# # Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist Length + 1
+# def sniff_http_response_thread():
+#     #sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
+#     sniff(session=TCPSession, filter = "tcp port 80", prn=get_http_packet1, store=False, count = 5)
+#     print(http_status)
+#     print("")
+#     print(http_content)
+#         ### Oeffne Google Chrome mit der Website
+#     http_body = http_content.partition("\r\n\r\n")[2]
+#     f = open("website.html", "w")
+#     f.write(http_body)
+#     f.close()
+#     new = 2
+#     url = "/home/ben/http_request/website.html"
+#     os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
+#     return
+
+# # Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
+# # auch sehr schnelle Responses eingefangen werden koennen
+# sniffer = myThread()
+# sniffer.start()
+# time.sleep(1) #Sniffer braucht ein wenig Zeit zum wach werden
 
 ### HTTP GET Paket 
 # Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
