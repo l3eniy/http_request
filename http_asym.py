@@ -109,6 +109,7 @@ def sniff_all_packets():
 
 SNIFFER = Sniff_Thread()
 SNIFFER.start()
+time.sleep(0.5)
 
 
 
