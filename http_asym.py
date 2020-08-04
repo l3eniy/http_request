@@ -80,11 +80,15 @@ def syn_ack_do(packet):
 
 
 def worker(packet):
-    #print (packet.summary())
     print ("IP Source: " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
     print ("IP Destin: " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
     print("TCP Flags:  " + str(packet.getlayer(TCP).flags))
-    print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
+    try:
+        print str(packet.getlayer(TCP).payload_guess)
+    except:
+        print "Payload Guess Exception"
+        
+    print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n") 
     return
 
 ### Thread Klasse initiieren fuer ACK
