@@ -83,7 +83,7 @@ def worker(packet):
     payload_length = len(packet[TCP].payload)
     flags = packet.getlayer(TCP).flags
     in_seq = packet[TCP].seq
-    in_ack = packet[TCP].ack)
+    in_ack = packet[TCP].ack
     print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
     print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
     print("TCP Payload Length:  " + str(payload_length))
@@ -100,7 +100,7 @@ def worker(packet):
     if flags & FIN:
         print "FIN Flag set"
     print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
-    
+
     ack_nr = in_seq + payload_length + 1
     seq_nr = in_ack
     if payload_length > 0 or flags & (SYN ^ ACK):
