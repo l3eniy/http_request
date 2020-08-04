@@ -93,13 +93,14 @@ def worker(packet):
         print "PSH Flag set"
     if flags & (SYN ^ ACK):
         print "SYN/ACK --> both Flags set"
+    else:
         if flags & SYN:
             print "SYN Flag set"
         if flags & ACK:
             print "ACK Flag set"
     if flags & FIN:
         print "FIN Flag set"
-    print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
+
 
     ack_nr = in_seq + payload_length + 1
     seq_nr = in_ack
@@ -107,7 +108,7 @@ def worker(packet):
         print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
     if flags & FIN:
         print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
-    
+    print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
 
 ### Thread Klasse initiieren fuer ACK
