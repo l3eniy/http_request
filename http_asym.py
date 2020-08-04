@@ -87,18 +87,19 @@ def worker(packet):
     print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
     print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
     print("TCP Payload Length:  " + str(payload_length))
+    print("Flags:               " + str(flags))
     print("TCP ACK#:            " + str(in_ack))
     print("TCP SEQ#:            " + str(in_seq))
-    if flags & PSH:
+    if (flags ^ PSH) == False:
         print "PSH Flag set"
-    if flags & (SYN ^ ACK):
+    if (flags ^ (SYN | ACK)) == False:
         print "SYN/ACK --> both Flags set"
     else:
-        if flags & SYN:
+        if (flags ^ SYN) == False:
             print "SYN Flag set"
-        if flags & ACK:
+        if (flags ^ ACK) == False:
             print "ACK Flag set"
-    if flags & FIN:
+    if (flags ^ FIN) == False:
         print "FIN Flag set"
 
 
@@ -126,7 +127,7 @@ def start_TCP_IN_Thread(packet):
     t.start()
 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 10)
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 8)
     return
 
 
