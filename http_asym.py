@@ -80,13 +80,13 @@ def syn_ack_do(packet):
 
 
 def worker(packet):
-    print ("IP Source: " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
-    print ("IP Destin: " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
-    print("TCP Flags:  " + str(packet.getlayer(TCP).flags))
-    try:
-        print len(packet[TCP].payload)
-    except:
-        print "Payload Guess Exception"
+    print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
+    print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
+    print("TCP Flags:           " + str(packet.getlayer(TCP).flags))
+    print("TCP Payload Length:  " + len(packet[TCP].payload))
+    print("TCP ACK#:            " + str(packet[TCP].ack))
+    print("TCP SEQ#:            " + str(packet[TCP].seq))
+    
         
     print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n") 
     return
