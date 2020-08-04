@@ -76,6 +76,9 @@ def syn_ack_do(packet):
 
 
 
+def send_tcp(src_port, seqnr, acknr, tcp_flags):
+    ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags=tcp_flags)
+    out_ack = send(ack, verbose=0)
 
 
 
@@ -84,6 +87,7 @@ def worker(packet):
     flags = packet.getlayer(TCP).flags
     in_seq = packet[TCP].seq
     in_ack = packet[TCP].ack
+    dst_port = packet.getlayer(TCP).dport
     print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
     print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
     print("TCP Payload Length:  " + str(payload_length))
@@ -106,9 +110,13 @@ def worker(packet):
     ack_nr = in_seq + payload_length + 1
     seq_nr = in_ack
     if payload_length > 0 or (flags & (SYN ^ ACK)) == 18:
+        send_flags = 'A'
         print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
+        send_tcp(dst_port, seq_nr, ack_nr, send_flags)
     if flags & FIN:
+        send_flags = 'F''A'
         print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
+        send_tcp(dst_port, seq_nr, ack_nr, send_flags)
     print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
 
@@ -127,7 +135,7 @@ def start_TCP_IN_Thread(packet):
     t.start()
 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 8)
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 5)
     return
 
 
