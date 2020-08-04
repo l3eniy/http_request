@@ -82,24 +82,31 @@ def syn_ack_do(packet):
 def worker(packet):
     payload_length = len(packet[TCP].payload)
     flags = packet.getlayer(TCP).flags
+    in_seq = packet[TCP].seq
+    in_ack = packet[TCP].ack)
     print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
     print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
-    print("TCP Payload Length:  " + str(len(packet[TCP].payload)))
-    print("TCP ACK#:            " + str(packet[TCP].ack))
-    print("TCP SEQ#:            " + str(packet[TCP].seq))
-    if flags & (SYN ^ ACK):
-        print "SYN/ACK --> both Flags set"
-    if flags & SYN:
-        print "SYN Flag set"
-    if flags & ACK:
-        print "ACK Flag set"
-    if flags & FIN:
-        print "FIN Flag set"
+    print("TCP Payload Length:  " + str(payload_length))
+    print("TCP ACK#:            " + str(in_ack)
+    print("TCP SEQ#:            " + str(in_seq)
     if flags & PSH:
         print "PSH Flag set"
+    if flags & (SYN ^ ACK):
+        print "SYN/ACK --> both Flags set"
+        if flags & SYN:
+            print "SYN Flag set"
+        if flags & ACK:
+            print "ACK Flag set"
+    if flags & FIN:
+        print "FIN Flag set"
     print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
-
-    #if payload_length > 0 or 
+    
+    ack_nr = in_seq + payload_length + 1
+    seq_nr = in_ack
+    if payload_length > 0 or flags & (SYN ^ ACK):
+        print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
+    if flags & FIN:
+        print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
     
     return
 
