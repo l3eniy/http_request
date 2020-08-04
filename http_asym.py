@@ -31,6 +31,10 @@ http_port = int(sys.argv[2])
 dest = sys.argv[1]
 s_port = random.randint(20000,65500)
 
+CONNECTED = False
+CONNECTION_FINISHED = False
+
+
 # TCP-Flags definieren
 FIN = 0x01
 SYN = 0x02
@@ -70,31 +74,20 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
         print("")
 
 
+def send_request(dst_port, seq_nr, ack_nr):
+    while CONNECTED is not True
+        sleep(0.01)
+    syn_ack_received_send_http_req(dst_port, seq_nr, ack_nr)
 
 
 
-### Sniff Funktion fuer sniff_http_response_thread
 http_content = ""
-def get_http_packet1(packet):
-    if packet.haslayer(HTTPResponse) is True:
-        global http_status
-        ### http status ist die Response Status Nachricht. zB HTTP1.1/200/OK
-        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
-    if packet.haslayer(Raw) is True:
-        global http_content
-        ### http content sind header und body und wird ggf aus mehreren Paketen zusammengesetzt. Nur die Layer Raw besitzt Teile von HTTP Content
-        http_content += str(packet.getlayer(Raw).load)
+def fin_function():
+    ### Wait until FIN packet is received
+    while CONNECTION_FINISHED is not True:
+        sleep(0.2)
 
-
-
-
-### Sniff Funktion um HTTPResponse zu finden
-# Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist Length + 1
-def sniff_http_response_thread():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=get_http_packet1, store=False, count = 5)
-
-
-
+    ### Connection is Finished --> FIN Packet Received
     print(http_status)
     print("")
     print(http_content)
@@ -112,12 +105,7 @@ def sniff_http_response_thread():
 
 
 
-def worker(packet):
-    payload_length = len(packet[TCP].payload)
-    flags = packet.getlayer(TCP).flags
-    in_seq = packet[TCP].seq
-    in_ack = packet[TCP].ack
-    dst_port = packet.getlayer(TCP).dport
+def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
     if debug:
         print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
         print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
@@ -136,24 +124,32 @@ def worker(packet):
                 print "ACK Flag set"
         if flags & FIN:
             print "FIN Flag set"
-
+    
+    global CONNECTED
+    global CONNECTION_FINISHED
     #### ACK# = SEQ# + Payload Laenge + 1
     #### SEQ# = ACK#
     ack_nr = in_seq + payload_length + 1
     seq_nr = in_ack
 
+    ### SYN/ACK oder Payload_Length > 0 received
     if payload_length > 0 or (flags & (SYN ^ ACK)) == 18:
         send_flags = 'A'
         if debug:
             print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
+
+    ### SYN/ACK received
         if (flags & (SYN ^ ACK)) == 18:
-            syn_ack_received_send_http_req(dst_port, seq_nr, ack_nr)
+           CONNECTED = True
+
+    ### FIN received
     if flags & FIN:
         send_flags = 'F''A'
         if debug:
             print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
+        CONNECTION_FINISHED = True
     if debug:
         print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
@@ -165,33 +161,51 @@ class Sniff_Thread (threading.Thread):
    def run(self):
       sniff_all_packets()
 
-### Thread Klasse initiieren fuer HTTP Resp
-class Sniff_HTTP_Thread (threading.Thread):
-   def __init__(self):
-      threading.Thread.__init__(self)
-   def run(self):
-      sniff_http_response_thread()
-
-
 
 threads = []
-def start_TCP_IN_Thread(packet):
+def packet_received(packet):
+    payload_length = len(packet[TCP].payload)
+    flags = packet.getlayer(TCP).flags
+    in_seq = packet[TCP].seq
+    in_ack = packet[TCP].ack
+    dst_port = packet.getlayer(TCP).dport
+
+### starte den connection manager Thread
     global threads
-    t = threading.Thread(target=worker, args=(packet,))
-    threads.append(t)
-    t.start()
+    connection_management = threading.Thread(target=TCP_connection_manager, args=(packet, payload_length, flags, in_seq, in_ack, dst_port))
+    threads.append(connection_management)
+    connection_management.start()
+    
+### starte den send request Thread
+    send_request_thread = threading.Thread(target=send_request, args=(dst_port, seq_nr, ack_nr))
+    send_request_thread.start()
+
+### Greife HTTP header und Payload ab
+    if packet.haslayer(HTTPResponse) is True:
+        global http_status
+        ### http status ist die Response Status Nachricht. zB HTTP1.1/200/OK
+        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
+    if packet.haslayer(Raw) is True:
+        global http_content
+        ### http content sind header und body und wird ggf aus mehreren Paketen zusammengesetzt. Nur die Layer Raw besitzt Teile von HTTP Content
+        http_content += str(packet.getlayer(Raw).load)
+
+
+
+
+
 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=start_TCP_IN_Thread, store=False, count = 5)
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, count = 5)
     return
 
 
 
 
 
-SNIFFER = Sniff_Thread()
-HTTP_SNIFFER = Sniff_HTTP_Thread()
-HTTP_SNIFFER.start()
+SNIFFER = threading.Thread(target=sniff_all_packets)
+Fin_Thread = threading.Thread(target=fin_function)
+Fin_Thread.start()
 SNIFFER.start()
 time.sleep(1)
 
