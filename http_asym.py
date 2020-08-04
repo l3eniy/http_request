@@ -31,7 +31,7 @@ http_port = int(sys.argv[2])
 dest = sys.argv[1]
 s_port = random.randint(20000,65500)
 
-CONNECTED = False
+CONNECTION = {"connected": False}
 CONNECTION_FINISHED = False
 
 
@@ -74,10 +74,10 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
         print("")
 
 
-def send_request(dst_port, seq_nr, ack_nr):
-    while CONNECTED is not True:
+def send_request():
+    while CONNECTION["status"] is not True:
         time.sleep(0.01)
-    syn_ack_received_send_http_req(dst_port, seq_nr, ack_nr)
+    syn_ack_received_send_http_req(CONNECTION["dst_port"], CONNECTION["seq_nr"], CONNECTION["ack_nr"])
 
 
 
@@ -125,7 +125,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
         if flags & FIN:
             print "FIN Flag set"
     
-    global CONNECTED
+    global CONNECTION
     global CONNECTION_FINISHED
     #### ACK# = SEQ# + Payload Laenge + 1
     #### SEQ# = ACK#
@@ -141,7 +141,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
 
     ### SYN/ACK received
         if (flags & (SYN ^ ACK)) == 18:
-           CONNECTED = True
+           CONNECTION{ "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
 
     ### FIN received
     if flags & FIN:
@@ -178,10 +178,6 @@ def packet_received(packet):
     threads.append(connection_management)
     connection_management.start()
     
-    ### starte den send request Thread
-    send_request_thread = threading.Thread(target=send_request, args=(dst_port, seq_nr, ack_nr))
-    send_request_thread.start()
-
     ### Greife HTTP header und Payload ab
     if packet.haslayer(HTTPResponse) is True:
         global http_status
@@ -207,8 +203,12 @@ def sniff_all_packets():
 
 SNIFFER = threading.Thread(target=sniff_all_packets)
 Fin_Thread = threading.Thread(target=fin_function)
+send_request_thread = threading.Thread(target=send_request)
+### starte die Threads
+send_request_thread.start()
 Fin_Thread.start()
 SNIFFER.start()
+
 time.sleep(1)
 
 
