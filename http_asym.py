@@ -141,7 +141,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
 
     ### SYN/ACK received
         if (flags & (SYN ^ ACK)) == 18:
-           CONNECTION{ "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
+           CONNECTION = { "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
 
     ### FIN received
     if flags & FIN:
