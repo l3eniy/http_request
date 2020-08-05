@@ -110,7 +110,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     if flags & Flags["FIN"]:
         send_flags = 'A'
         if debug:
-            print("### --> FA\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
+            print("### --> A\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
         CONNECTION_FINISHED = True
     return
