@@ -92,7 +92,7 @@ def packet_received(packet):
 def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
     if debug:
         indent = "\t"
-        if len.(str(packet.getlayer(IP).src)) < 10 :
+        if len(str(packet.getlayer(IP).src)) < 10 :
             indent = "\t\t"  
         print("### <-- " + str(flags) + "\treceived from\t" + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport) + indent + "< ACK#: " + str(in_ack) + " | SEQ#: " + str(in_seq) + " >")
         # print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
