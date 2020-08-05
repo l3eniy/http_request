@@ -91,7 +91,7 @@ def packet_received(packet):
 
 def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
     if debug:
-        print("### <-- " + str(flags) + "\treceived from\t" + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport) + "\t\t\t\t\t  < ACK#: " + str(in_ack) + " | SEQ#: " + str(in_seq) + " >")
+        print("### <-- " + str(flags) + "\treceived from\t" + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport) + "".ljust(30) + "< ACK#: " + str(in_ack) + " | SEQ#: " + str(in_seq) + " >")
         # print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
         # print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
         # print("TCP Payload Length:  " + str(payload_length))
