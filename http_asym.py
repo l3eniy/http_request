@@ -179,10 +179,6 @@ time.sleep(1)
 syn = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn, verbose=0)
 if debug:
-        print("############## SYN packet sent #####################")
-        print("dport von SYN = " + str(http_port))
-        print("Source IP Address = " + str(attacker_ip))
-        print("Destination IP Address = " + str(destination_ip))
-        print("")
+       print("### --> S sent to " + attacker_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < SEQ#: 0 >")
 
 
