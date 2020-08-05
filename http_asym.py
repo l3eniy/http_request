@@ -134,7 +134,6 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
             print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
         CONNECTION_FINISHED = True
-        connection_finished_event.set()
     if debug:
         print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
@@ -161,9 +160,8 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
 
 def fin_function():
     ### Wait until FIN packet is received
-    #while CONNECTION_FINISHED is not True:
-    #    time.sleep(0.2)
-    connection_finished_event = threading.Event()
+    while CONNECTION_FINISHED is not True:
+        time.sleep(0.2)
     ### Connection is Finished --> FIN Packet Received
     print(http_status)
     print("")
