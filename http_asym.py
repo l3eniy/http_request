@@ -121,7 +121,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     if flags & FIN:
         send_flags = 'F''A'
         if debug:
-            print("### --> FA sent to " + destination_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
+            print("### --> FA\tsent to\t\t" + destination_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
         CONNECTION_FINISHED = True
     return
@@ -140,7 +140,7 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
     http_request = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
     send(http_request, verbose=0)
     if debug:
-        print("### --> PA sent to " + attacker_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(acknr) + " | SEQ#: " + str(seqnr) + " > (HTTP Request)")
+        print("### --> PA\tsent to\t\t" + attacker_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(acknr) + " | SEQ#: " + str(seqnr) + " > (HTTP Request)")
 
 def fin_function():
     ### Wait until FIN packet is received
