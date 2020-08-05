@@ -110,7 +110,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     if payload_length > 0 or (flags & (SYN ^ ACK)) == 18:
         send_flags = 'A'
         if debug:
-            print("### --> A\tsent to\t" + destination_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
+            print("### --> A\tsent to\t\t" + destination_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
 
     ### SYN/ACK received --> Connection = True
