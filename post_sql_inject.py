@@ -31,7 +31,7 @@ http_port = int(sys.argv[2])
 destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
-getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\n\r\nname=john'
+getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\n\r\n"name"="john"'
 
 ### Variablen einfuehren
 CONNECTION = {"connected": False}
