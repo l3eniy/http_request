@@ -31,6 +31,8 @@ http_port = int(sys.argv[2])
 destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
+getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\n\r\nname=john'
+
 ### Variablen einfuehren
 CONNECTION = {"connected": False}
 CONNECTION_FINISHED = False
@@ -49,7 +51,7 @@ else:
 ### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
 VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
 ### getStr ist der String im HTTP Request
-getStr = 'GET / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\n\r\n'
+
 
 
 
