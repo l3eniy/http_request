@@ -152,8 +152,7 @@ def fin_function():
     print ("\r\n\r\n")
     print(http_status)
     print("")
-    http_content.replace("<br>", "\r\n")
-    print(http_content)
+    print(http_content.replace("<br>", "\r\n"))
 
     ### Oeffne Google Chrome mit der Website
     # http_body = http_content.partition("\r\n\r\n")[2]
