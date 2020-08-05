@@ -91,23 +91,13 @@ def packet_received(packet):
 
 def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
     if debug:
-        print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
-        print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
-        print("TCP Payload Length:  " + str(payload_length))
-        print("Flags:               " + str(flags))
-        print("TCP ACK#:            " + str(in_ack))
-        print("TCP SEQ#:            " + str(in_seq))
-        if flags & PSH:
-            print "PSH Flag set"
-        if (flags & (SYN ^ ACK)) == 18:
-            print "SYN/ACK --> both Flags set"
-        else:
-            if flags & SYN:
-                print "SYN Flag set"
-            if flags & ACK:
-                print "ACK Flag set"
-        if flags & FIN:
-            print "FIN Flag set"
+        print("### <-- " + str(flags) + " received from " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport) + "  < ACK#: " + in_ack + " | SEQ#: " + in_seq + " >")
+        # print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
+        # print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
+        # print("TCP Payload Length:  " + str(payload_length))
+        # print("Flags:               " + str(flags))
+        # print("TCP ACK#:            " + str(in_ack))
+        # print("TCP SEQ#:            " + str(in_seq))
     
     global CONNECTION
     global CONNECTION_FINISHED
@@ -120,7 +110,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     if payload_length > 0 or (flags & (SYN ^ ACK)) == 18:
         send_flags = 'A'
         if debug:
-            print ("ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
+            print("### --> A sent to " + attacker_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + ack_nr + " | SEQ#: " + seq_nr + " >")
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
 
     ### SYN/ACK received --> Connection = True
@@ -131,11 +121,9 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     if flags & FIN:
         send_flags = 'F''A'
         if debug:
-            print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
+            print("### --> FA sent to " + attacker_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + ack_nr + " | SEQ#: " + seq_nr + " >")
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
         CONNECTION_FINISHED = True
-    if debug:
-        print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
 
 def send_tcp(src_port, seqnr, acknr, tcp_flags):
@@ -152,29 +140,26 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
     http_request = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
     send(http_request, verbose=0)
     if debug:
-        print("############## HTTP Request sent #####################")
-        print("srcport = " + str(src_port)) 
-        print("ACK# = " + str(acknr))
-        print("SEQ# = " + str(seqnr))
-        print("")
+        print("### --> PA sent to " + attacker_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + ack_nr + " | SEQ#: " + seq_nr + " > (HTTP Request)")
 
 def fin_function():
     ### Wait until FIN packet is received
     while CONNECTION_FINISHED is not True:
         time.sleep(0.2)
     ### Connection is Finished --> FIN Packet Received
+    print ("\r\n\r\n")
     print(http_status)
     print("")
     print(http_content)
         ### Oeffne Google Chrome mit der Website
-    http_body = http_content.partition("\r\n\r\n")[2]
-    f = open("website.html", "w")
-    f.write(http_body)
-    f.close()
-    new = 2
-    url = "/home/ben/http_request/website.html"
-    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
-    return
+    # http_body = http_content.partition("\r\n\r\n")[2]
+    # f = open("website.html", "w")
+    # f.write(http_body)
+    # f.close()
+    # new = 2
+    # url = "/home/ben/http_request/website.html"
+    # os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
+    # return
 
 
 
