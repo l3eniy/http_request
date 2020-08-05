@@ -55,7 +55,7 @@ Flags = {"FIN": 0x01,"SYN": 0x02,"RST": 0x04,"PSH": 0x08,"ACK": 0x10,"URG": 0x20
 #     debug = 1
 # else:
 #     debug = 0
-debug = 1
+debug = 0
 
 ### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
 VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
