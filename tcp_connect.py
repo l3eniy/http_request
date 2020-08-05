@@ -106,9 +106,9 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
         if (flags & (Flags["SYN"] ^ Flags["ACK"])) == 18:
            CONNECTION = { "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
 
-    ### FIN received --> Connection is finished
+    ### FIN received --> Connection Finish is acknoledged. acknoledge too
     if flags & Flags["FIN"]:
-        send_flags = 'F''A'
+        send_flags = 'A'
         if debug:
             print("### --> FA\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
@@ -130,11 +130,21 @@ def fin_function():
     print("Connection finished")
 
 
+def send_request():
+    while CONNECTION["connected"] is not True:
+        time.sleep(0.01)
+    send_tcp(CONNECTION["dst_port"], CONNECTION["seq_nr"], CONNECTION["ack_nr"], 'F''A')
+
+
+
+
 ########################
 ### Erstelle die Threads
 SNIFFER = threading.Thread(target=sniff_all_packets)
 Fin_Thread = threading.Thread(target=fin_function)
+send_request_thread = threading.Thread(target=send_request)
 ### starte die Threads
+send_request_thread.start()
 Fin_Thread.start()
 SNIFFER.start()
 ### warte bis threads laufen
