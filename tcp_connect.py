@@ -52,7 +52,7 @@ VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN
 
 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, stop_filter= lambda x: CONNECTION_FINISHED)
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, count= 2)
     return
 
 def packet_received(packet):
@@ -133,6 +133,8 @@ def fin_function():
 def send_request():
     while CONNECTION["connected"] is not True:
         time.sleep(0.01)
+        if debug:
+    print("### --> FA\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(CONNECTION["ack_nr"]) + " | SEQ#: " + str(CONNECTION["seq_nr"]) + " >")
     send_tcp(CONNECTION["dst_port"], CONNECTION["seq_nr"], CONNECTION["ack_nr"], 'F''A')
 
 
