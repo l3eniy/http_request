@@ -31,23 +31,14 @@ http_port = int(sys.argv[2])
 destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
+### Variablen einführen
 CONNECTION = {"connected": False}
 CONNECTION_FINISHED = False
-
 http_content = ""
 threads = []
 
-# TCP-Flags definieren
-Flags = {
-"FIN": 0x01,
-"SYN": 0x02,
-"RST": 0x04,
-"PSH": 0x08,
-"ACK": 0x10,
-"URG": 0x20,
-"ECE": 0x40,
-"CWR": 0x80
-}
+### TCP-Flags definieren
+Flags = {"FIN": 0x01,"SYN": 0x02,"RST": 0x04,"PSH": 0x08,"ACK": 0x10,"URG": 0x20,"ECE": 0x40,"CWR": 0x80}
 
 ### Check if debug is enabled
 if len(sys.argv) > 3:
@@ -179,7 +170,7 @@ time.sleep(1)
 
 
 
-#$$$$$ SEND SYN
+#### SEND SYN
 syn = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn, verbose=0)
 if debug:
