@@ -38,14 +38,16 @@ http_content = ""
 threads = []
 
 # TCP-Flags definieren
-FIN = 0x01
-SYN = 0x02
-RST = 0x04
-PSH = 0x08
-ACK = 0x10
-URG = 0x20
-ECE = 0x40
-CWR = 0x80
+Flags = {
+"FIN": 0x01,
+"SYN": 0x02,
+"RST": 0x04,
+"PSH": 0x08,
+"ACK": 0x10,
+"URG": 0x20,
+"ECE": 0x40,
+"CWR": 0x80
+}
 
 ### Check if debug is enabled
 if len(sys.argv) > 3:
@@ -95,12 +97,6 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
         if len(str(packet.getlayer(IP).src)) < 10 :
             indent = "\t\t"  
         print("### <-- " + str(flags) + "\treceived from\t" + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport) + indent + "< ACK#: " + str(in_ack) + " | SEQ#: " + str(in_seq) + " >")
-        # print ("IP Source:          " + str(packet.getlayer(IP).src) + ":" + str(packet.getlayer(TCP).sport))
-        # print ("IP Destin:          " + str(packet.getlayer(IP).dst) + ":" + str(packet.getlayer(TCP).dport))
-        # print("TCP Payload Length:  " + str(payload_length))
-        # print("Flags:               " + str(flags))
-        # print("TCP ACK#:            " + str(in_ack))
-        # print("TCP SEQ#:            " + str(in_seq))
     
     global CONNECTION
     global CONNECTION_FINISHED
@@ -110,7 +106,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     seq_nr = in_ack
 
     ### SYN/ACK oder Payload_Length > 0 received
-    if payload_length > 0 or (flags & (SYN ^ ACK)) == 18:
+    if payload_length > 0 or (flags & (Flags["SYN"] ^ Flags["ACK"])) == 18:
         send_flags = 'A'
         if debug:
             ### --> A	sent to		VX: 192.168.10.149 VNID: 1 // 10.0.0.10:80   < ACK#: 3233855856 | SEQ#: 1 >
@@ -118,11 +114,11 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
 
     ### SYN/ACK received --> Connection = True
-        if (flags & (SYN ^ ACK)) == 18:
+        if (flags & (Flags["SYN"] ^ Flags["ACK"])) == 18:
            CONNECTION = { "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
 
     ### FIN received --> Connection is finished
-    if flags & FIN:
+    if flags & Flags["FIN"]:
         send_flags = 'F''A'
         if debug:
             print("### --> FA\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
@@ -155,19 +151,20 @@ def fin_function():
     print(http_status)
     print("")
     print(http_content)
-        ### Oeffne Google Chrome mit der Website
-    # http_body = http_content.partition("\r\n\r\n")[2]
-    # f = open("website.html", "w")
-    # f.write(http_body)
-    # f.close()
-    # new = 2
-    # url = "/home/ben/http_request/website.html"
-    # os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
-    # return
+
+    ### Oeffne Google Chrome mit der Website
+    http_body = http_content.partition("\r\n\r\n")[2]
+    f = open("website.html", "w")
+    f.write(http_body)
+    f.close()
+    new = 2
+    url = "/home/ben/http_request/website.html"
+    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
+    return
 
 
-
-
+########################
+### Erstelle die Threads
 SNIFFER = threading.Thread(target=sniff_all_packets)
 Fin_Thread = threading.Thread(target=fin_function)
 send_request_thread = threading.Thread(target=send_request)
@@ -175,8 +172,11 @@ send_request_thread = threading.Thread(target=send_request)
 send_request_thread.start()
 Fin_Thread.start()
 SNIFFER.start()
-
+### warte bis threads laufen
 time.sleep(1)
+#######################
+
+
 
 
 #$$$$$ SEND SYN
