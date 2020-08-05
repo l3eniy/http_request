@@ -152,17 +152,18 @@ def fin_function():
     print ("\r\n\r\n")
     print(http_status)
     print("")
+    http_content.replace("<br>", "\r\n")
     print(http_content)
 
     ### Oeffne Google Chrome mit der Website
-    http_body = http_content.partition("\r\n\r\n")[2]
-    f = open("website.html", "w")
-    f.write(http_body)
-    f.close()
-    new = 2
-    url = "/home/ben/http_request/website.html"
-    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
-    return
+    # http_body = http_content.partition("\r\n\r\n")[2]
+    # f = open("website.html", "w")
+    # f.write(http_body)
+    # f.close()
+    # new = 2
+    # url = "/home/ben/http_request/website.html"
+    # os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
+    # return
 
 
 ########################
