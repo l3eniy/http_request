@@ -31,7 +31,7 @@ http_port = int(sys.argv[2])
 destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
-### Variablen einführen
+### Variablen einfuehren
 CONNECTION = {"connected": False}
 CONNECTION_FINISHED = False
 http_content = ""
