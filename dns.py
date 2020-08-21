@@ -31,7 +31,7 @@ def sniff_dns_thread(testport):
     return
 
 #start sniff thread and sleep shortly for the thread to come up
-sniffer_thread = threading.Thread(target=sniff_dns_thread, args=(testport))
+sniffer_thread = threading.Thread(target=sniff_dns_thread, args=(testport,))
 sniffer_thread.start()
 time.sleep(0.5)
 
