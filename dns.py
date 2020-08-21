@@ -26,7 +26,8 @@ lookup = sys.argv[1]
 
 #GET Response Function
 def sniff_dns_thread(testport):
-    sniff(filter = "udp and port " + str(testport), count = 1, prn= lambda x:x.summary())
+    print "IM THREAD KLAPPT"
+    sniff(filter = "udp and port " + str(testport), count = 1, prn= lambda x:x.summary(),timeout=5)
     return
 
 #start sniff thread and sleep shortly for the thread to come up
