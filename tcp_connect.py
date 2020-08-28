@@ -70,15 +70,7 @@ def packet_received(packet):
     threads.append(connection_management)
     connection_management.start()
     
-    ### Greife HTTP header und Payload ab
-    if packet.haslayer(HTTPResponse) is True:
-        global http_status
-        ### http status ist die Response Status Nachricht. zB HTTP1.1/200/OK
-        http_status = str(packet.getlayer(HTTPResponse).Http_Version) + " " + str(packet.getlayer(HTTPResponse).Status_Code) + " " + str(packet.getlayer(HTTPResponse).Reason_Phrase) 
-    if packet.haslayer(Raw) is True:
-        global http_content
-        ### http content sind header und body und wird ggf aus mehreren Paketen zusammengesetzt. Nur die Layer Raw besitzt Teile von HTTP Content
-        http_content += str(packet.getlayer(Raw).load)
+
 
 def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_port):
     if debug:
@@ -91,7 +83,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     global CONNECTION_FINISHED
     #### ACK# = SEQ# + Payload Laenge + 1
     #### SEQ# = ACK#
-    ack_nr = in_seq + payload_length + 1
+    ack_nr = in_seq + payload_length# + 1
     seq_nr = in_ack
 
     ### SYN/ACK oder Payload_Length > 0 received
@@ -102,7 +94,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
             print("### --> A\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
         send_tcp(dst_port, seq_nr, ack_nr, send_flags)
 
-    ### SYN/ACK received --> Connection = True
+        ### SYN/ACK received --> Connection = True
         if (flags & (Flags["SYN"] ^ Flags["ACK"])) == 18:
            CONNECTION = { "connected": True , "dst_port": dst_port, "seq_nr": seq_nr, "ack_nr": ack_nr}
 

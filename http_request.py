@@ -39,12 +39,13 @@ try:
 except:
     POST_String = ""
 
-cont_length = len(POST_String)
+
 
 if HTTP_Method == "GET":
     getStr = 'GET / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\n\r\n'
 else:
     if HTTP_Method == "POST":
+        cont_length = len(POST_String)
         getStr = 'POST / HTTP/1.1\r\nHost:' + destination_ip + '\r\nAccept-Encoding: 8bit\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: ' + str(cont_length) + '\r\n\r\n' + POST_String
     else:
         print "HTTP Method not correct!!!"
