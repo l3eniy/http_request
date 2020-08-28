@@ -83,7 +83,7 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     global CONNECTION_FINISHED
     #### ACK# = SEQ# + Payload Laenge + 1
     #### SEQ# = ACK#
-    ack_nr = in_seq + payload_length# + 1
+    ack_nr = in_seq + payload_length + 1
     seq_nr = in_ack
 
     ### SYN/ACK oder Payload_Length > 0 received
