@@ -116,12 +116,13 @@ def TCP_connection_manager(packet, payload_length, flags, in_seq, in_ack, dst_po
     global CONNECTION_FINISHED
     #### ACK# = SEQ# + Payload Laenge + 1
     #### SEQ# = ACK#
-    ack_nr = in_seq + payload_length + 1
+    ack_nr = in_seq + payload_length
     seq_nr = in_ack
 
     ### SYN/ACK oder Payload_Length > 0 received
     if payload_length > 0 or (flags & (Flags["SYN"] ^ Flags["ACK"])) == 18:
         send_flags = 'A'
+        ack_nr = ack_nr + 1
         if debug:
             ### --> A	sent to		VX: 192.168.10.149 VNID: 1 // 10.0.0.10:80   < ACK#: 3233855856 | SEQ#: 1 >
             print("### --> A\tsent to\t\t" + destination_ip + ":" + str(http_port) + "\t\t< ACK#: " + str(ack_nr) + " | SEQ#: " + str(seq_nr) + " >")
