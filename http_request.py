@@ -35,10 +35,13 @@ destination_ip = sys.argv[1]
 s_port = random.randint(20000,65500)
 
 try:
-    POST_String = sys.argv[4]
+    if sys.argv[4] == "open":
+        openchrome = 1
+    else:
+        POST_String = sys.argv[4]
 except:
     POST_String = ""
-
+    openchrome = 0
 
 
 if HTTP_Method == "GET":
@@ -165,16 +168,18 @@ def fin_function():
     print(http_status)
     print("")
     print(http_content.replace("<br>", "\r\n"))
-
+    
     ### Oeffne Google Chrome mit der Website
-    # http_body = http_content.partition("\r\n\r\n")[2]
-    # f = open("website.html", "w")
-    # f.write(http_body)
-    # f.close()
-    # new = 2
-    # url = "/home/ben/http_request/website.html"
-    # os.system('sudo -u ben google-chrome-stable /home/ben/http_request/website.html')
-    # return
+    global openchrome
+    if openchrome:
+        http_body = http_content.partition("\r\n\r\n")[2]
+        f = open("website.html", "w")
+        f.write(http_body)
+        f.close()
+        new = 2
+        url = "/home/ben/vxlan-attack/website.html"
+        os.system('sudo -u ben google-chrome-stable /home/ben/vxlan-attack/website.html')
+        return
 
 
 ########################
